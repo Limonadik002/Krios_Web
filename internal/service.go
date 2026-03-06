@@ -1,6 +1,8 @@
-package inernal
+package internal
 
 import (
+	"fmt"
+
 	m "github.com/vova1001/krios_proj/models"
 )
 
@@ -12,6 +14,10 @@ func NewService(repo *partRepo) *partService {
 	return &partService{repo: repo}
 }
 
-func (s *partService) CreateObj(Obj m.Object) {
-	s.repo.AddObjFromDB(Obj)
+// потом мб валидацию добавить(если будет нужно, на фронт возвращать это)
+func (s *partService) CreateObj(Obj m.Object) error {
+	if err := s.repo.AddObjFromDB(Obj); err != nil {
+		return fmt.Errorf("err:%w", err)
+	}
+	return nil
 }

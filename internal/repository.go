@@ -1,4 +1,4 @@
-package inernal
+package internal
 
 import (
 	"database/sql"

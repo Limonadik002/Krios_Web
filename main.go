@@ -23,10 +23,13 @@ func main() {
 		log.Fatal("err conect from db: %w", err)
 	}
 
-	internal.NewRepository(db)
 	d.Migrate(db)
+	repo := internal.NewRepository(db)
+	service := internal.NewService(repo)
+	handler := internal.NewHandler(service)
 
 	mux := http.DefaultServeMux
+	handler.RegisterRouter(mux)
 
 	server := http.Server{
 		Addr:         ":8080",

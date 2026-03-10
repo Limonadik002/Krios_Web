@@ -11,8 +11,8 @@ type partHandler struct {
 	service *partService
 }
 
-func NewHandler(service *partService) partHandler {
-	return partHandler{service: service}
+func NewHandler(service *partService) *partHandler {
+	return &partHandler{service: service}
 }
 
 func (h *partHandler) RegisterRouter(mux *http.ServeMux) {

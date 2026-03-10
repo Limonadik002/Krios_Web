@@ -36,6 +36,7 @@ func Migrate(db *sql.DB) error {
 		price DECIMAL(10,2) NOT NULL,
 		parametrs_name TEXT,
 		characteristics JSONB NOT NULL DEFAULT '{}',
+		version INTEGER DEFAULT 0
 	)`)
 
 	if err != nil {

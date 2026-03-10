@@ -23,7 +23,9 @@ func main() {
 		log.Fatal("err conect from db: %w", err)
 	}
 
-	d.Migrate(db)
+	if err = d.Migrate(db); err != nil {
+		log.Fatal("migrate err:%w", err)
+	}
 	repo := internal.NewRepository(db)
 	service := internal.NewService(repo)
 	handler := internal.NewHandler(service)

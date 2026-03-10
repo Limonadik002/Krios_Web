@@ -21,3 +21,13 @@ func (s *partService) CreateObj(Obj m.Object) error {
 	}
 	return nil
 }
+
+// Срочно добавить валидацию пришедших полей, не занят ли артикул и тд завтра
+func (s *partService) UpdateObj(UpdateObj m.Object) error {
+	art := UpdateObj.Article
+	if err := s.repo.UpdateInfoObj(art, UpdateObj); err != nil {
+		return err
+	}
+	return nil
+
+}

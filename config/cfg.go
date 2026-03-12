@@ -16,6 +16,14 @@ type ConfigDB struct {
 	DBSSLMode string
 }
 
+type ConfigS3 struct {
+	Endpoint  string
+	Region    string
+	Bucket    string
+	AccessKey string
+	SecretKey string
+}
+
 func LoadCfgDB() (*ConfigDB, error) {
 	err := godotenv.Load(".env")
 	if err != nil {
@@ -29,7 +37,19 @@ func LoadCfgDB() (*ConfigDB, error) {
 		DBUser:    os.Getenv("DB_USER"),
 		DBSSLMode: os.Getenv("DB_SSLMODE"),
 	}
-
 	return cfgBD, nil
+}
 
+func LoadCfgS3() (*ConfigS3, error) {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal(".env S3 not found")
+	}
+	cfgS3 := &ConfigS3{
+		Endpoint:  os.Getenv("S3_ENDPOINT"),
+		Region:    os.Getenv("S3_REGION"),
+		Bucket:    os.Getenv("S3_BUCKET"),
+		AccessKey: os.Getenv("S3_ACCESS_KEY_ID"),
+		SecretKey: os.Getenv("S3_SECRET_ACCESS_KEY"),
+	}
+	return cfgS3, nil
 }

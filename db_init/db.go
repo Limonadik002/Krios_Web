@@ -32,7 +32,6 @@ func Migrate(db *sql.DB) error {
 		id SERIAL PRIMARY KEY,
 		article TEXT UNIQUE NOT NULL,
 		name TEXT NOT NULL,
-		photo TEXT,
 		price DECIMAL(10,2) NOT NULL,
 		parametrs_name TEXT,
 		characteristics JSONB NOT NULL DEFAULT '{}',
@@ -40,7 +39,19 @@ func Migrate(db *sql.DB) error {
 	)`)
 
 	if err != nil {
-		return fmt.Errorf("migration failed: %w", err)
+		return fmt.Errorf("create obj failed: %w", err)
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS objects_photo(
+		object_article TEXT NOT NULL,
+		position INT NOT NULL,
+		url TEXT NOT NULL,
+		PRIMARY KEY (object_article, position),
+		FOREIGN KEY (object_article) REFERENCES objects(article) ON DELETE CASCADE
+	)`)
+
+	if err != nil {
+		return fmt.Errorf("create obj_photo failed: %w", err)
 	}
 
 	log.Println("Migration completed")

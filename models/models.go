@@ -15,3 +15,17 @@ type ObjPhoto struct {
 	Position       int    `json:"position"`
 	UrlPhotos      string `json:"url_photos"`
 }
+
+type PresignRequest struct {
+	Filenames []string `json:"filenames"`
+}
+
+type PresignItem struct {
+	Key          string `json:"key"`
+	PresignedURL string `json:"presigned_url"`
+	PublicURL    string `json:"public_url"`
+}
+
+type PresignResponse struct {
+	Items []PresignItem `json:"items"`
+}

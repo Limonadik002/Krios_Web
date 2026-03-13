@@ -3,9 +3,13 @@ package internal
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"time"
 
+	"github.com/google/uuid"
 	m "github.com/vova1001/krios_proj/models"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -45,4 +49,36 @@ func (s *partService) UpdateObj(UpdateObj m.Object) error {
 	return nil
 }
 
-func (s *partService) GeneratePresignedURL(ctx context.Context, req *m.PresignRequest)
+func (s *partService) GeneratePresignedURL(ctx context.Context, req *m.PresignRequest) (*m.PresignResponse, error) {
+	if len(req.Filenames) == 0 {
+		return nil, fmt.Errorf("request empty")
+	}
+	presignedClient := s3.NewPresignClient(s.s3Client)
+	PresignedURLs := make([]m.PresignItem, len(req.Filenames))
+
+	for i, filesName := range req.Filenames {
+
+		ext := filepath.Ext(filesName)
+		if ext == "" {
+			ext = ".bin"
+		}
+
+		key := fmt.Sprintf("%s%s", uuid.New().String(), ext)
+
+		reqPresign, err := presignedClient.PresignPutObject(ctx, &s3.PutObjectInput{
+			Bucket: aws.String(s.bucket),
+			Key:    aws.String(key),
+		}, s3.WithPresignExpires(15*time.Minute))
+
+		if err != nil {
+			return nil, fmt.Errorf("field presign for %s, err:%w", filesName, err)
+		}
+
+		PresignedURLs[i] = m.PresignItem{
+			Key:          key,
+			PresignedURL: reqPresign.URL,
+			PublicURL:    fmt.Sprintf("%s/%s/%s", s.publicURL, s.bucket, key),
+		}
+	}
+	return &m.PresignResponse{Items: PresignedURLs}, nil
+}

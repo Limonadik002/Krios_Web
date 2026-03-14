@@ -54,6 +54,21 @@ func Migrate(db *sql.DB) error {
 		return fmt.Errorf("create obj_photo failed: %w", err)
 	}
 
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS list_of_obj(
+		id SERIAL PRIMARY KEY,
+		order_id INT NOT NULL DEFAULT 0,
+		name TEXT NOT NULL,
+		article TEXT NOT NULL,
+		price DECIMAL(10,2) NOT NULL,
+		quantity  INT CHECK (quantity > 0),
+		phone VARCHAR(255) NOT NULL,
+		created_at TIMESTAMPTZ DEFAULT NOW()
+	)`)
+
+	if err != nil {
+		return fmt.Errorf("create list_of_obj failed: %w", err)
+	}
+
 	log.Println("Migration completed")
 	return nil
 }

@@ -19,6 +19,7 @@ func (h *partHandler) RegisterRouter(mux *http.ServeMux) {
 	mux.HandleFunc("POST /Presign", h.PresignedURL)
 	mux.HandleFunc("POST /CreateNewObj", h.CreateObj)
 	mux.HandleFunc("PUT /UpdateObj", h.UpdateObj)
+	mux.HandleFunc("POST /AddOrders", h.AddOrders)
 }
 
 func (h *partHandler) CreateObj(w http.ResponseWriter, r *http.Request) {
@@ -67,4 +68,23 @@ func (h *partHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	err = json.NewEncoder(w).Encode(PresignResponse)
 
+}
+
+func (h *partHandler) AddOrders(w http.ResponseWriter, r *http.Request) {
+	Orders := make([]*m.Order, 0)
+	if err := json.NewDecoder(r.Body).Decode(&Orders); err != nil {
+		http.Error(w, "not valid json", 400)
+		return
+	}
+	if err := h.service.AddOrders(Orders); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	if err := h.service.SendOrderToMe(Orders); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 }

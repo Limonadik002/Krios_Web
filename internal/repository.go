@@ -47,3 +47,26 @@ func (d *partRepo) UpdateInfoObj(art string, UpdateObj m.Object) error {
 	}
 	return nil
 }
+
+func (d *partRepo) AddOrdersFromDb(Orders []*m.Order, OrderId int) error {
+
+	for _, Order := range Orders {
+		_, err := d.db.Exec(`INSERT INTO list_of_obj(order_id,name,article,price,quantity,phone)
+		VALUES($1,$2,$3,$4,$5,$6)`, OrderId, Order.Name, Order.Object_article, Order.Price, Order.Quantity, Order.Phone)
+
+		if err != nil {
+			return fmt.Errorf("failed to insert order to db: %w", err)
+		}
+	}
+	return nil
+}
+
+func (d *partRepo) GetOrderId() (int, error) {
+	var maxOrderID int
+	err := d.db.QueryRow(`SELECT COALESCE(MAX(order_id), 0) FROM list_of_obj`).Scan(&maxOrderID)
+
+	if err != nil {
+		return 0, fmt.Errorf("failed to search order_id: %w", err)
+	}
+	return maxOrderID, nil
+}

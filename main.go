@@ -48,11 +48,16 @@ func main() {
 		log.Fatalf("err conect from db: %v", err)
 	}
 
+	cfgEmailBot, err := c.LoadCfgEmailBot()
+	if err != nil {
+		log.Fatalf("err load cfg:%v", err)
+	}
+
 	if err = d.Migrate(db); err != nil {
 		log.Fatalf("migrate err:%v", err)
 	}
 	repo := internal.NewRepository(db)
-	service := internal.NewService(repo, clientS3, cfgS3.Bucket, cfgS3.Endpoint)
+	service := internal.NewService(repo, clientS3, cfgS3.Bucket, cfgS3.Endpoint, cfgEmailBot)
 	handler := internal.NewHandler(service)
 
 	mux := http.DefaultServeMux

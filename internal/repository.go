@@ -45,18 +45,6 @@ func (d *partRepo) AddObjFromDB(Obj m.Object) error {
 	return tx.Commit()
 }
 
-// func (d *partRepo) AddObjPhotoFromDB(Obj m.Object) error {
-// 	for _, Photo := range Obj.Photos {
-
-// 		_, err := d.db.Exec(`INSERT INTO objects_photo(object_article,position,url)
-// 			VALUES($1,$2,$3)`, Obj.Article, Photo.Position, Photo.UrlPhotos)
-// 		if err != nil {
-// 			return fmt.Errorf("err insert into obj photos: %w", err)
-// 		}
-// 	}
-// 	return nil
-// }
-
 func (d *partRepo) UpdateInfoObj(art string, UpdateObj m.Object) error {
 	charsJSON, err := json.Marshal(UpdateObj.Сharacteristics)
 	if err != nil {

@@ -37,10 +37,6 @@ func NewService(repo *partRepo, s3Client *s3.Client, bucket, pubURL string, cfgE
 
 // потом мб валидацию добавить(если будет нужно, на фронт возвращать это)
 func (s *partService) CreateObj(Obj m.Object) error {
-	if err := s.repo.AddObjPhotoFromDB(Obj); err != nil {
-		return fmt.Errorf("err:%w", err)
-	}
-
 	if err := s.repo.AddObjFromDB(Obj); err != nil {
 		return fmt.Errorf("err:%w", err)
 	}

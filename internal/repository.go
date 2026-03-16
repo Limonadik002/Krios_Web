@@ -17,19 +17,45 @@ func NewRepository(db *sql.DB) *partRepo {
 }
 
 func (d *partRepo) AddObjFromDB(Obj m.Object) error {
+	tx, err := d.db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to begin transaction: %w", err)
+	}
+	defer tx.Rollback()
 
 	charsJSON, err := json.Marshal(Obj.Сharacteristics)
 	if err != nil {
 		return fmt.Errorf("failed to marshal characteristics: %w", err)
 	}
 
-	_, err = d.db.Exec(`INSERT INTO objects(article, name, photo, price, parametrs_name, characteristics)
-		VALUES($1,$2,$3,$4,$5,$6)`, Obj.Article, Obj.Name, Obj.Photos, Obj.Price, Obj.ParametrsName, charsJSON)
+	_, err = d.db.Exec(`INSERT INTO objects(article, name, price, parametrs_name, characteristics)
+		VALUES($1,$2,$3,$4,$5,$6)`, Obj.Article, Obj.Name, Obj.Price, Obj.ParametrsName, charsJSON)
 	if err != nil {
 		return fmt.Errorf("err insert into obj: %w", err)
 	}
-	return nil
+
+	for _, Photo := range Obj.Photos {
+		_, err := d.db.Exec(`INSERT INTO objects_photo(object_article,position,url)
+			VALUES($1,$2,$3)`, Obj.Article, Photo.Position, Photo.UrlPhotos)
+		if err != nil {
+			return fmt.Errorf("err insert into obj photos: %w", err)
+		}
+	}
+
+	return tx.Commit()
 }
+
+// func (d *partRepo) AddObjPhotoFromDB(Obj m.Object) error {
+// 	for _, Photo := range Obj.Photos {
+
+// 		_, err := d.db.Exec(`INSERT INTO objects_photo(object_article,position,url)
+// 			VALUES($1,$2,$3)`, Obj.Article, Photo.Position, Photo.UrlPhotos)
+// 		if err != nil {
+// 			return fmt.Errorf("err insert into obj photos: %w", err)
+// 		}
+// 	}
+// 	return nil
+// }
 
 func (d *partRepo) UpdateInfoObj(art string, UpdateObj m.Object) error {
 	charsJSON, err := json.Marshal(UpdateObj.Сharacteristics)

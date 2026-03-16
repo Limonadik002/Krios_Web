@@ -37,9 +37,14 @@ func NewService(repo *partRepo, s3Client *s3.Client, bucket, pubURL string, cfgE
 
 // потом мб валидацию добавить(если будет нужно, на фронт возвращать это)
 func (s *partService) CreateObj(Obj m.Object) error {
+	if err := s.repo.AddObjPhotoFromDB(Obj); err != nil {
+		return fmt.Errorf("err:%w", err)
+	}
+
 	if err := s.repo.AddObjFromDB(Obj); err != nil {
 		return fmt.Errorf("err:%w", err)
 	}
+
 	return nil
 }
 
@@ -48,17 +53,20 @@ func (s *partService) UpdateObj(UpdateObj m.Object) error {
 	if UpdateObj.Name == "" {
 		return fmt.Errorf("")
 	}
+
 	art := UpdateObj.Article
 	if err := s.repo.UpdateInfoObj(art, UpdateObj); err != nil {
 		return err
 	}
+
 	return nil
 }
 
-func (s *partService) GeneratePresignedURL(ctx context.Context, req *m.PresignRequest) (*m.PresignResponse, error) {
+func (s *partService) GeneratePresignedURLs(ctx context.Context, req *m.PresignRequest) (*m.PresignResponse, error) {
 	if len(req.Filenames) == 0 {
 		return nil, fmt.Errorf("request empty")
 	}
+
 	presignedClient := s3.NewPresignClient(s.s3Client)
 	PresignedURLs := make([]m.PresignItem, len(req.Filenames))
 
@@ -71,7 +79,7 @@ func (s *partService) GeneratePresignedURL(ctx context.Context, req *m.PresignRe
 
 		key := fmt.Sprintf("%s%s", uuid.New().String(), ext)
 
-		reqPresign, err := presignedClient.PresignPutObject(ctx, &s3.PutObjectInput{
+		PresignWriteUrl, err := presignedClient.PresignPutObject(ctx, &s3.PutObjectInput{
 			Bucket: aws.String(s.bucket),
 			Key:    aws.String(key),
 		}, s3.WithPresignExpires(15*time.Minute))
@@ -81,9 +89,9 @@ func (s *partService) GeneratePresignedURL(ctx context.Context, req *m.PresignRe
 		}
 
 		PresignedURLs[i] = m.PresignItem{
-			Key:          key,
-			PresignedURL: reqPresign.URL,
-			PublicURL:    fmt.Sprintf("%s/%s/%s", s.publicURL, s.bucket, key),
+			Key:      key,
+			UrlWrite: PresignWriteUrl.URL,
+			UrlRead:  fmt.Sprintf("%s/%s/%s", s.publicURL, s.bucket, key),
 		}
 	}
 	return &m.PresignResponse{Items: PresignedURLs}, nil

@@ -21,9 +21,9 @@ type PresignRequest struct {
 }
 
 type PresignItem struct {
-	Key          string `json:"key"`
-	PresignedURL string `json:"presigned_url"`
-	PublicURL    string `json:"public_url"`
+	Key      string `json:"key"`
+	UrlWrite string `json:"url_write"`
+	UrlRead  string `json:"url_read"`
 }
 
 type PresignResponse struct {

@@ -59,7 +59,7 @@ func (h *partHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "not valid json", 400)
 		return
 	}
-	PresignResponse, err := h.service.GeneratePresignedURL(ctx, &PresignReq)
+	PresignResponse, err := h.service.GeneratePresignedURLs(ctx, &PresignReq)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

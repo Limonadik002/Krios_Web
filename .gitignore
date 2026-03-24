@@ -3,14 +3,5 @@
 .env.local
 .env.*.local
 
-# Logs
-logs/
-*.log
-
-# Binaries
-main
-*.exe
-
 # IDE
-.idea/
 .vscode/

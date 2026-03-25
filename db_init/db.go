@@ -35,7 +35,8 @@ func Migrate(db *sql.DB) error {
 		price DECIMAL(10,2) NOT NULL,
 		parametrs_name TEXT,
 		characteristics JSONB NOT NULL DEFAULT '{}',
-		version INTEGER DEFAULT 0
+		version INTEGER DEFAULT 0,
+		created_at TIMESTAMPTZ
 	)`)
 
 	if err != nil {
@@ -69,6 +70,7 @@ func Migrate(db *sql.DB) error {
 		return fmt.Errorf("create list_of_obj failed: %w", err)
 	}
 
+<<<<<<< Updated upstream
 	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS list_of_obj(
 		id SERIAL PRIMARY KEY,
 		order_id INT NOT NULL DEFAULT 0,
@@ -170,6 +172,12 @@ func Migrate(db *sql.DB) error {
 
 	if err != nil {
 		return fmt.Errorf("create populate function failed: %w", err)
+=======
+	_, err = db.Exec("CREATE INDEX IF NOT EXISTS idx_objects_created_at ON objects(created_at DESC)")
+
+	if err != nil {
+		return fmt.Errorf("create inde failed: %w", err)
+>>>>>>> Stashed changes
 	}
 
 	log.Println("Migration completed")

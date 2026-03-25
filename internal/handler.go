@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	m "github.com/vova1001/krios_proj/models"
 )
@@ -20,6 +21,7 @@ func (h *partHandler) RegisterRouter(mux *http.ServeMux) {
 	mux.HandleFunc("POST /CreateNewObj", h.CreateObj)
 	mux.HandleFunc("PUT /UpdateObj", h.UpdateObj)
 	mux.HandleFunc("POST /AddOrders", h.AddOrders)
+	mux.HandleFunc("GET /GetObjects", h.GetObjects)
 }
 
 func (h *partHandler) CreateObj(w http.ResponseWriter, r *http.Request) {
@@ -49,6 +51,36 @@ func (h *partHandler) UpdateObj(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+}
+
+func (h *partHandler) GetObjects(w http.ResponseWriter, r *http.Request) {
+	page := r.URL.Query().Get("page")
+	limit := r.URL.Query().Get("limit")
+
+	pageInt, err := strconv.Atoi(page)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+	resObjs, err := h.service.GetObj(pageInt, limitInt)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err = json.NewEncoder(w).Encode(resObjs); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
 
 }
 

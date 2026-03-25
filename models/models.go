@@ -1,13 +1,16 @@
 package models
 
+import "time"
+
 type Object struct {
 	Article         string            `json:"article"`
 	Name            string            `json:"name"`
 	Price           float64           `json:"price"`
 	ParametrsName   string            `json:"parametrs_name"`
-	Photos          []ObjPhoto        `json:"photos"`
-	Сharacteristics map[string]string `json:"characteristics"`
+	Characteristics map[string]string `json:"characteristics"`
+	Created_at      time.Time         `json:"created_at"`
 	Version         int               `json:"version"`
+	Photos          []ObjPhoto        `json:"photos"`
 }
 
 type ObjPhoto struct {

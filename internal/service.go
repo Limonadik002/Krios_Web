@@ -37,6 +37,7 @@ func NewService(repo *partRepo, s3Client *s3.Client, bucket, pubURL string, cfgE
 
 // потом мб валидацию добавить(если будет нужно, на фронт возвращать это)
 func (s *partService) CreateObj(Obj m.Object) error {
+	Obj.Created_at = time.Now()
 	if err := s.repo.AddObjFromDB(Obj); err != nil {
 		return fmt.Errorf("err:%w", err)
 	}
@@ -56,6 +57,17 @@ func (s *partService) UpdateObj(UpdateObj m.Object) error {
 	}
 
 	return nil
+}
+
+func (s *partService) GetObj(page, limit int) ([]m.Object, error) {
+	offset := (page - 1) * limit
+	objects, err := s.repo.GetObj(offset, limit)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return objects, err
 }
 
 func (s *partService) GeneratePresignedURLs(ctx context.Context, req *m.PresignRequest) (*m.PresignResponse, error) {

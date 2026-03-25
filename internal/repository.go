@@ -23,19 +23,19 @@ func (d *partRepo) AddObjFromDB(Obj m.Object) error {
 	}
 	defer tx.Rollback()
 
-	charsJSON, err := json.Marshal(Obj.Сharacteristics)
+	charsJSON, err := json.Marshal(Obj.Characteristics)
 	if err != nil {
 		return fmt.Errorf("failed to marshal characteristics: %w", err)
 	}
 
-	_, err = d.db.Exec(`INSERT INTO objects(article, name, price, parametrs_name, characteristics)
-		VALUES($1,$2,$3,$4,$5,$6)`, Obj.Article, Obj.Name, Obj.Price, Obj.ParametrsName, charsJSON)
+	_, err = tx.Exec(`INSERT INTO objects(article, name, price, parametrs_name, characteristics, created_at)
+		VALUES($1,$2,$3,$4,$5,$6)`, Obj.Article, Obj.Name, Obj.Price, Obj.ParametrsName, charsJSON, Obj.Created_at)
 	if err != nil {
 		return fmt.Errorf("err insert into obj: %w", err)
 	}
 
 	for _, Photo := range Obj.Photos {
-		_, err := d.db.Exec(`INSERT INTO objects_photo(object_article,position,url)
+		_, err := tx.Exec(`INSERT INTO objects_photo(object_article,position,url)
 			VALUES($1,$2,$3)`, Obj.Article, Photo.Position, Photo.UrlPhotos)
 		if err != nil {
 			return fmt.Errorf("err insert into obj photos: %w", err)
@@ -46,7 +46,7 @@ func (d *partRepo) AddObjFromDB(Obj m.Object) error {
 }
 
 func (d *partRepo) UpdateInfoObj(art string, UpdateObj m.Object) error {
-	charsJSON, err := json.Marshal(UpdateObj.Сharacteristics)
+	charsJSON, err := json.Marshal(UpdateObj.Characteristics)
 	if err != nil {
 		return fmt.Errorf("failed to marshal characteristics: %w", err)
 	}
@@ -83,4 +83,56 @@ func (d *partRepo) GetOrderId() (int, error) {
 		return 0, fmt.Errorf("failed to search order_id: %w", err)
 	}
 	return maxOrderID, nil
+}
+
+func (d *partRepo) GetObj(offset, limit int) ([]m.Object, error) {
+	rows, err := d.db.Query(`SELECT article, name, price, parametrs_name, characteristics 
+				FROM objects
+				ORDER BY created_at DESC
+				LIMIT $1 OFFSET $2`, limit, offset)
+	if err != nil {
+		return nil, fmt.Errorf("Err select get arg obj offset limit%w", err)
+	}
+	defer rows.Close()
+
+	objects := make([]m.Object, 0, limit)
+
+	for rows.Next() {
+		var obj m.Object
+		var charsJSON []byte
+		err := rows.Scan(&obj.Article, &obj.Name, &obj.Price, &obj.ParametrsName, &charsJSON)
+
+		if err != nil {
+			return nil, fmt.Errorf("scan get obj err %w", err)
+		}
+
+		if err = json.Unmarshal(charsJSON, &obj.Characteristics); err != nil {
+			return nil, fmt.Errorf("unmarshal chars %w", err)
+		}
+
+		PhotoRows, err := d.db.Query("SELECT position, url FROM objects_photo WHERE object_article = $1", obj.Article)
+
+		if err != nil {
+			return nil, fmt.Errorf("Err select get arg photo offset limit%w", err)
+		}
+
+		var Photos []m.ObjPhoto
+
+		for PhotoRows.Next() {
+			var Photo m.ObjPhoto
+
+			err := PhotoRows.Scan(&Photo.Position, &Photo.UrlPhotos)
+
+			if err != nil {
+				return nil, fmt.Errorf("scan get photos err %w", err)
+			}
+
+			Photos = append(Photos, Photo)
+		}
+		PhotoRows.Close()
+
+		obj.Photos = Photos
+		objects = append(objects, obj)
+	}
+	return objects, nil
 }

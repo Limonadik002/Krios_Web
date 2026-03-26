@@ -102,6 +102,22 @@ func (h *partHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *partHandler) SearchObj(w http.ResponseWriter, r *http.Request) {
+	Sname := r.URL.Query().Get("search")
+	res, err := h.service.SearchObj(Sname)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err = json.NewEncoder(w).Encode(res); err != nil {
+		http.Error(w, err.Error(), 400)
+		return
+	}
+
+}
+
 func (h *partHandler) AddOrders(w http.ResponseWriter, r *http.Request) {
 	Orders := make([]*m.Order, 0)
 	if err := json.NewDecoder(r.Body).Decode(&Orders); err != nil {

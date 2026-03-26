@@ -70,6 +70,14 @@ func (s *partService) GetObj(page, limit int) ([]m.Object, error) {
 	return objects, err
 }
 
+func (s *partService) SearchObj(searchName string) (*[]m.RespSearch, error) {
+	res, err := s.repo.SearchObj(searchName)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 func (s *partService) GeneratePresignedURLs(ctx context.Context, req *m.PresignRequest) (*m.PresignResponse, error) {
 	if len(req.Filenames) == 0 {
 		return nil, fmt.Errorf("request empty")

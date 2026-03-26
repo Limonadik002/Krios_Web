@@ -92,88 +92,124 @@ func Migrate(db *sql.DB) error {
 	}
 
 	_, err = db.Exec(`CREATE OR REPLACE FUNCTION populate_objects_with_photos()
-	RETURNS void AS $$
-	DECLARE
-		i INTEGER;
-		article_text TEXT;
-		name_text TEXT;
-		price_value DECIMAL(10,2);
-		characteristics_json JSONB;
-		photo_count INTEGER;
-		j INTEGER;
-	BEGIN
-		-- Генерация 60 товаров
-		FOR i IN 1..60 LOOP
-			article_text := 'ART' || LPAD(i::TEXT, 5, '0');
-			name_text := 'Товар ' || i::TEXT || ' - ' || 
-				CASE 
-					WHEN i % 5 = 0 THEN 'Премиум'
-					WHEN i % 3 = 0 THEN 'Стандарт'
-					ELSE 'Эконом'
-				END;
-			price_value := 100 + (i * 165) % 9900;
-			characteristics_json := jsonb_build_object(
-				'вес', (500 + (i * 23) % 5000)::TEXT || ' г',
-				'размер', 
-					CASE (i % 5)
-						WHEN 0 THEN 'XL'
-						WHEN 1 THEN 'L'
-						WHEN 2 THEN 'M'
-						WHEN 3 THEN 'S'
-						ELSE 'XS'
-					END,
-				'цвет', 
-					CASE (i % 7)
-						WHEN 0 THEN 'красный'
-						WHEN 1 THEN 'синий'
-						WHEN 2 THEN 'зеленый'
-						WHEN 3 THEN 'желтый'
-						WHEN 4 THEN 'черный'
-						WHEN 5 THEN 'белый'
-						ELSE 'серый'
-					END,
-				'материал',
-					CASE (i % 4)
-						WHEN 0 THEN 'хлопок'
-						WHEN 1 THEN 'полиэстер'
-						WHEN 2 THEN 'шерсть'
-						ELSE 'нейлон'
-					END,
-				'страна',
-					CASE (i % 5)
-						WHEN 0 THEN 'Россия'
-						WHEN 1 THEN 'Китай'
-						WHEN 2 THEN 'Италия'
-						WHEN 3 THEN 'Германия'
-						ELSE 'Турция'
-					END
-			);
-			
-			INSERT INTO objects (article, name, price, characteristics, version)
-			VALUES (article_text, name_text, price_value, characteristics_json, 1)
-			ON CONFLICT (article) DO UPDATE SET
-				name = EXCLUDED.name,
-				price = EXCLUDED.price,
-				characteristics = EXCLUDED.characteristics,
-				version = objects.version + 1;
-			
-			photo_count := 1 + (i % 5);
-			
-			FOR j IN 1..photo_count LOOP
-				INSERT INTO objects_photo (object_article, position, url)
-				VALUES (
-					article_text,
-					j,
-					'https://example.com/photos/' || article_text || '/photo_' || j::TEXT || '.jpg'
-				)
-				ON CONFLICT (object_article, position) DO UPDATE SET
-					url = EXCLUDED.url;
-			END LOOP;
-		END LOOP;
-		
-		RAISE NOTICE 'Успешно добавлено 60 товаров с фотографиями';
-	END;
-	$$ LANGUAGE plpgsql`)
+    RETURNS void AS $$
+    DECLARE
+        i INTEGER;
+        article_text TEXT;
+        name_text TEXT;
+        price_value DECIMAL(10,2);
+        parametrs_name_text TEXT;
+        characteristics_json JSONB;
+        photo_count INTEGER;
+        j INTEGER;
+        created_at_value TIMESTAMPTZ;
+    BEGIN
+        -- Генерация 60 товаров
+        FOR i IN 1..60 LOOP
+            -- Генерируем артикул
+            article_text := 'ART' || LPAD(i::TEXT, 5, '0');
+            
+            -- Генерируем название (никогда не NULL)
+            name_text := 'Товар ' || i::TEXT || ' - ' || 
+                CASE 
+                    WHEN i % 5 = 0 THEN 'Премиум'
+                    WHEN i % 3 = 0 THEN 'Стандарт'
+                    ELSE 'Эконом'
+                END;
+            
+            -- Генерируем цену (никогда не NULL)
+            price_value := 100 + (i * 165) % 9900;
+            
+            -- Генерируем parametrs_name (всегда есть значение)
+            parametrs_name_text := 'Характеристики товара ' || i::TEXT;
+            
+            -- Генерируем created_at (текущее время минус случайное количество дней)
+            created_at_value := NOW() - (i || ' days')::INTERVAL;
+            
+            -- Генерируем JSONB характеристики (всегда не пустые)
+            characteristics_json := jsonb_build_object(
+                'вес', (500 + (i * 23) % 5000)::TEXT || ' г',
+                'размер', 
+                    CASE (i % 5)
+                        WHEN 0 THEN 'XL'
+                        WHEN 1 THEN 'L'
+                        WHEN 2 THEN 'M'
+                        WHEN 3 THEN 'S'
+                        ELSE 'XS'
+                    END,
+                'цвет', 
+                    CASE (i % 7)
+                        WHEN 0 THEN 'красный'
+                        WHEN 1 THEN 'синий'
+                        WHEN 2 THEN 'зеленый'
+                        WHEN 3 THEN 'желтый'
+                        WHEN 4 THEN 'черный'
+                        WHEN 5 THEN 'белый'
+                        ELSE 'серый'
+                    END,
+                'материал',
+                    CASE (i % 4)
+                        WHEN 0 THEN 'хлопок'
+                        WHEN 1 THEN 'полиэстер'
+                        WHEN 2 THEN 'шерсть'
+                        ELSE 'нейлон'
+                    END,
+                'страна',
+                    CASE (i % 5)
+                        WHEN 0 THEN 'Россия'
+                        WHEN 1 THEN 'Китай'
+                        WHEN 2 THEN 'Италия'
+                        WHEN 3 THEN 'Германия'
+                        ELSE 'Турция'
+                    END
+            );
+            
+            -- Вставка в objects (все поля заполнены)
+            INSERT INTO objects (
+                article, 
+                name, 
+                price, 
+                parametrs_name, 
+                characteristics, 
+                version,
+                created_at
+            )
+            VALUES (
+                article_text, 
+                name_text, 
+                price_value, 
+                parametrs_name_text, 
+                characteristics_json, 
+                1,
+                created_at_value
+            )
+            ON CONFLICT (article) DO UPDATE SET
+                name = EXCLUDED.name,
+                price = EXCLUDED.price,
+                parametrs_name = EXCLUDED.parametrs_name,
+                characteristics = EXCLUDED.characteristics,
+                version = objects.version + 1,
+                created_at = EXCLUDED.created_at;
+            
+            -- Количество фото (1-5 штук)
+            photo_count := 1 + (i % 5);
+            
+            -- Вставка фото (все поля заполнены)
+            FOR j IN 1..photo_count LOOP
+                INSERT INTO objects_photo (object_article, position, url)
+                VALUES (
+                    article_text,
+                    j,
+                    'https://example.com/photos/' || article_text || '/photo_' || j::TEXT || '.jpg'
+                )
+                ON CONFLICT (object_article, position) DO UPDATE SET
+                    url = EXCLUDED.url;
+            END LOOP;
+        END LOOP;
+        
+        RAISE NOTICE 'Успешно добавлено 60 товаров с фотографиями';
+    END;
+    $$ LANGUAGE plpgsql`)
 
 	if err != nil {
 		return fmt.Errorf("create populate function failed: %w", err)

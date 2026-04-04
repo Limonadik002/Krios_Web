@@ -137,8 +137,10 @@ func (d *partRepo) GetObj(offset, limit int) ([]m.Object, error) {
 	return objects, nil
 }
 
-func (d *partRepo) SearchObj(nameObj string) ([]m.RespSearch, error) {
-	rows, err := d.db.Query(`SELECT article, name, price  FROM objects WHERE name ILIKE $1 ORDER BY name`, nameObj)
+func (d *partRepo) SearchObj(nameObj string) (*[]m.RespSearch, error) {
+	searchGood := nameObj + "%"
+
+	rows, err := d.db.Query(`SELECT article, name, price  FROM objects WHERE name ILIKE $1 ORDER BY name`, searchGood)
 
 	if err != nil {
 		return nil, fmt.Errorf("Err select search obj %w", err)
@@ -155,5 +157,5 @@ func (d *partRepo) SearchObj(nameObj string) ([]m.RespSearch, error) {
 		}
 		RSO = append(RSO, searchObj)
 	}
-	return RSO, nil
+	return &RSO, nil
 }

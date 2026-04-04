@@ -13,6 +13,12 @@ type Object struct {
 	Photos          []ObjPhoto        `json:"photos"`
 }
 
+type RespSearch struct {
+	Article string  `json:"article"`
+	Name    string  `json:"name"`
+	Price   float64 `json:"price"`
+}
+
 type ObjPhoto struct {
 	Object_article string `json:"obj_art"`
 	Position       int    `json:"position"`

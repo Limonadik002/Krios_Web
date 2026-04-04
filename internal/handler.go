@@ -22,6 +22,7 @@ func (h *partHandler) RegisterRouter(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /UpdateObj", h.UpdateObj)
 	mux.HandleFunc("POST /AddOrders", h.AddOrders)
 	mux.HandleFunc("GET /GetObjects", h.GetObjects)
+	mux.HandleFunc("GET /SearchObjects", h.SearchObj)
 }
 
 func (h *partHandler) CreateObj(w http.ResponseWriter, r *http.Request) {
@@ -111,7 +112,7 @@ func (h *partHandler) SearchObj(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err = json.NewEncoder(w).Encode(res); err != nil {
+	if err = json.NewEncoder(w).Encode(*res); err != nil {
 		http.Error(w, err.Error(), 400)
 		return
 	}

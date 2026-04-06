@@ -1,0 +1,52 @@
+.card-wrapper{
+  width: 100%;
+  max-width: 416px;
+  justify-self: center;
+}
+
+
+.card-wrapper img{
+  aspect-ratio: 1/1;
+  width: 100%;
+  height: auto;
+  background-color: #86A1A9;
+  margin-bottom: 24px;
+}
+
+.card-wrapper h2{
+  font-size: 32px;
+  color: #14404E;
+  font-weight: 600;
+  margin-bottom: 28px;
+}
+
+.card-wrapper p{
+  font-size: 24px;
+  color: #006383;
+  font-weight: 500;
+  margin-bottom: 48px;
+}
+
+.change{
+  outline: 0;
+  padding: 16px 0;
+  width: 100%;
+  color: #F2FBFF;
+  font-size: 24px;
+  background-color: #006383;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+.delete{
+  width: 100%;
+  outline: 0;
+  padding: 16px 0;
+  color: #34454B;
+  font-size: 24px;
+  background-color: #64767C;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+}

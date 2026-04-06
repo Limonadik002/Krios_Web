@@ -18,7 +18,7 @@ function App() {
         <Route path="/Admin" element={<AdminPage />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/add-product" element={<AddProductPage />} />
-        <Route path="/editing/:id" element={<Editing />} />
+        <Route path="/editing" element={<Editing />} />
       </Routes>
     </BrowserRouter>
   );

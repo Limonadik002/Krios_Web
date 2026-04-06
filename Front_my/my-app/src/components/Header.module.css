@@ -1,0 +1,28 @@
+.header {
+  display: flex;
+  align-items: center;
+  margin: 16px;
+  margin-left: 80px;
+}
+
+.header h1{
+  margin: 0px;
+  line-height: 100%;
+  letter-spacing: 2%;
+  font-size: 40px;
+ color: #005f86;
+}
+.header p{
+  margin: 0px 0 0;
+  font-size: 7px;
+  color: #005f86;
+  word-spacing: 9.45px;
+  letter-spacing: 10%;
+}
+
+.stick{
+  height: 60.95px;
+  border-left: 2.98px solid #046380;
+  margin-right: 12.78px;
+  margin-left: 17.35px;
+}

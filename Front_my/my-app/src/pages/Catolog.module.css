@@ -1,0 +1,160 @@
+.catalog-container{
+  margin-top: 80px;
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  
+
+}
+
+.back{
+  border: none;
+  color: #195062B2;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 24px;
+  vertical-align: middle;
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  align-self: start;
+}
+
+.catalog-title{
+  font-size: 32px;
+  letter-spacing: 0px;
+  color: #14404E;
+  align-self: start;
+}
+.catalog-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  row-gap: 80px;
+  column-gap: 32px;
+  width: 100%;
+  
+}
+.catalog-wraper{
+  width: 100%;
+  margin: auto 0;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 60px;
+  padding: 20px 0 40px 0;
+}
+
+.pageButton {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  
+  font-family: 'Onest', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 24px;
+  letter-spacing: 0px;
+  color: #006383; 
+  
+  cursor: pointer;
+}
+
+.pageButton.active {
+  color: #006383; 
+  text-decoration: underline;
+  text-decoration-style: solid;
+}
+
+.arrow {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  
+  font-family: 'Onest', sans-serif;
+  font-size: 24px;
+  line-height: 24px;
+  color: #006383; 
+  
+  cursor: pointer;
+}
+/* Добавьте в конец файла */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 60px;
+  padding: 20px 0 40px 0;
+}
+
+.pageButton {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  font-family: 'Onest', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 24px;
+  letter-spacing: 0px;
+  color: #006383;
+  cursor: pointer;
+}
+
+.pageButton.active {
+  color: #006383;
+  text-decoration: underline;
+  text-decoration-style: solid;
+}
+
+.arrow {
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  font-family: 'Onest', sans-serif;
+  font-size: 24px;
+  line-height: 24px;
+  color: #006383;
+  cursor: pointer;
+}
+
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.loading {
+  text-align: center;
+  font-size: 20px;
+  color: #14404E;
+  padding: 60px;
+  font-family: 'Onest', sans-serif;
+}
+
+.error {
+  text-align: center;
+  font-size: 18px;
+  color: #ff4444;
+  padding: 60px;
+  font-family: 'Onest', sans-serif;
+}
+
+.error button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #006383;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}

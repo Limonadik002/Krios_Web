@@ -138,7 +138,7 @@ func (d *partRepo) GetObj(offset, limit int) ([]m.Object, error) {
 }
 
 func (d *partRepo) SearchObj(nameObj string) (*[]m.RespSearch, error) {
-	searchGood := nameObj + "%"
+	searchGood := "%" + nameObj + "%"
 
 	rows, err := d.db.Query(`SELECT article, name, price  FROM objects WHERE name ILIKE $1 ORDER BY name`, searchGood)
 
@@ -158,4 +158,21 @@ func (d *partRepo) SearchObj(nameObj string) (*[]m.RespSearch, error) {
 		RSO = append(RSO, searchObj)
 	}
 	return &RSO, nil
+}
+
+func (d *partRepo) Delete(articule string) error {
+	res, err := d.db.Exec("DELETE FROM objects WHERE article=$1", articule)
+	if err != nil {
+		return fmt.Errorf("delete obj err %w", err)
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("check rows affected error: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("товар с артикулом %s не найден", articule)
+	}
+
+	return nil
 }

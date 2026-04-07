@@ -23,6 +23,7 @@ func (h *partHandler) RegisterRouter(mux *http.ServeMux) {
 	mux.HandleFunc("POST /AddOrders", h.AddOrders)
 	mux.HandleFunc("GET /GetObjects", h.GetObjects)
 	mux.HandleFunc("GET /SearchObjects", h.SearchObj)
+	mux.HandleFunc("DELETE /DeleteObj", h.DeleteObj)
 }
 
 func (h *partHandler) CreateObj(w http.ResponseWriter, r *http.Request) {
@@ -116,6 +117,17 @@ func (h *partHandler) SearchObj(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 400)
 		return
 	}
+
+}
+
+func (h *partHandler) DeleteObj(w http.ResponseWriter, r *http.Request) {
+	ArticuleForDelete := r.URL.Query().Get("articule")
+	if err := h.service.DeleteObj(ArticuleForDelete); err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
 
 }
 

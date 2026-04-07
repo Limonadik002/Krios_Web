@@ -78,6 +78,13 @@ func (s *partService) SearchObj(searchName string) (*[]m.RespSearch, error) {
 	return res, nil
 }
 
+func (s *partService) DeleteObj(articule string) error {
+	if err := s.repo.Delete(articule); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (s *partService) GeneratePresignedURLs(ctx context.Context, req *m.PresignRequest) (*m.PresignResponse, error) {
 	if len(req.Filenames) == 0 {
 		return nil, fmt.Errorf("request empty")

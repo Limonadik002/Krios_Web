@@ -14,7 +14,6 @@ import (
 	c "github.com/vova1001/krios_proj/config"
 	d "github.com/vova1001/krios_proj/db_init"
 	internal "github.com/vova1001/krios_proj/internal"
-	midlware "github.com/vova1001/krios_proj/midlware"
 )
 
 func main() {
@@ -63,11 +62,10 @@ func main() {
 
 	mux := http.DefaultServeMux
 	handler.RegisterRouter(mux)
-	corsHandler := midlware.CorsMiddleware(mux)
 
 	server := http.Server{
 		Addr:         ":8080",
-		Handler:      corsHandler,
+		Handler:      mux,
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}

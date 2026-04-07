@@ -5,6 +5,12 @@
   margin-left: 80px;
 }
 
+*{
+  font-family: Onest, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+}
+
 .header h1{
   margin: 0px;
   line-height: 100%;

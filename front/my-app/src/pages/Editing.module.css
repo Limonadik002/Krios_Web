@@ -198,6 +198,11 @@
   color: #2d2d2d;
 }
 
+.titleEditButton{
+  margin-top: 32px;
+  margin-bottom: 80px;
+}
+
 .deleteButton:hover {
   background: #646d76;
 }

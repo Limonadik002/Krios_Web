@@ -53,9 +53,12 @@ export function Editing() {
       <form className={styles.form}>
         <div className={styles.titleRow}>
           <h1 className={styles.pageTitle}>Название товара</h1>
-          <button type="button" className={styles.iconButton}>
+           <button
+            type="button"
+            className={`${styles.iconButton} ${styles.titleEditButton}`}
+          >
             <EditIcon />
-          </button>
+           </button>
         </div>
 
         <div className={styles.content}>

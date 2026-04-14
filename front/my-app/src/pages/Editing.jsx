@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styles from "./Editing.module.css";
 
 const EditIcon = () => (
@@ -93,11 +93,74 @@ export function Editing() {
   const [params, setParams] = useState([]);
   const [editingParamIndex, setEditingParamIndex] = useState(null);
 
+  const [photos, setPhotos] = useState([]);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+
+  const [version, setVersion] = useState(1);
+
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [cardDeleteModalOpen, setCardDeleteModalOpen] = useState(false);
+
+  const clearArticle = useMemo(() => {
+    return article.replace("Арт. ", "").trim();
+  }, [article]);
+
+  useEffect(() => {
+    fetchObjects();
+  }, []);
+
+  const getErrorText = async (response) => {
+    try {
+      const text = await response.text();
+      return text || `Ошибка сервера: ${response.status}`;
+    } catch {
+      return `Ошибка сервера: ${response.status}`;
+    }
+  };
+
+  const fetchObjects = async () => {
+    try {
+      setLoading(true);
+      setMessage("");
+
+      const response = await fetch(`/api/GetObjects?page=1&limit=20`, {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error(await getErrorText(response));
+      }
+
+      const data = await response.json();
+      const obj = Array.isArray(data) ? data[0] : data;
+
+      if (!obj) return;
+
+      setTitle(obj.name || "");
+      setArticle(obj.article ? `Арт. ${obj.article}` : "");
+      setPrice(
+        typeof obj.price === "number"
+          ? `${obj.price.toLocaleString("ru-RU")}₽`
+          : ""
+      );
+      setParamsTitle(obj.parametrs_name || "Параметры");
+      setParams(obj.characteristics ? Object.values(obj.characteristics) : []);
+      setPhotos(Array.isArray(obj.photos) ? obj.photos : []);
+      setSelectedPhotoIndex(0);
+      setVersion(obj.version ?? 1);
+    } catch (error) {
+      console.error("Ошибка загрузки товара:", error);
+      setMessage(error.message || "Ошибка загрузки");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleParamChange = (index, value) => {
     const updatedParams = [...params];
@@ -142,7 +205,6 @@ export function Editing() {
         break;
       case "param":
         setParams((prev) => prev.filter((_, i) => i !== deleteTarget.index));
-
         if (editingParamIndex === deleteTarget.index) {
           setEditingParamIndex(null);
         } else if (
@@ -175,21 +237,148 @@ export function Editing() {
     setCardDeleteModalOpen(false);
   };
 
-  const confirmSave = () => {
-    setSaveModalOpen(false);
-    console.log("Изменения сохранены");
+  const buildCharacteristics = () => {
+    return params.reduce((acc, item, index) => {
+      if (item?.trim()) {
+        acc[`param_${index + 1}`] = item.trim();
+      }
+      return acc;
+    }, {});
   };
 
-  const confirmCardDelete = () => {
-    setCardDeleteModalOpen(false);
-    console.log("Карточка удалена");
+  const buildCreatePayload = () => {
+    return {
+      article: clearArticle,
+      name: title.trim(),
+      price: Number(String(price).replace(/[^\d.]/g, "")) || 0,
+      parametrs_name: paramsTitle.trim(),
+      characteristics: buildCharacteristics(),
+      photos: [],
+    };
+  };
+
+  const buildUpdatePayload = () => {
+    return {
+      article: clearArticle,
+      name: title.trim(),
+      price: Number(String(price).replace(/[^\d.]/g, "")) || 0,
+      parametrs_name: paramsTitle.trim(),
+      characteristics: buildCharacteristics(),
+      version,
+    };
+  };
+
+  const createObject = async () => {
+    try {
+      setMessage("");
+
+      const payload = buildCreatePayload();
+
+      const response = await fetch(`/api/CreateNewObj`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(await getErrorText(response));
+      }
+
+      setMessage("Объект создан");
+      await fetchObjects();
+    } catch (error) {
+      console.error("Ошибка создания:", error);
+      setMessage(error.message || "Не удалось создать объект");
+    }
+  };
+
+  const confirmSave = async () => {
+    try {
+      setMessage("");
+
+      const payload = buildUpdatePayload();
+
+      const response = await fetch(`/api/UpdateObj`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(await getErrorText(response));
+      }
+
+      setSaveModalOpen(false);
+      setMessage("Изменения сохранены");
+      setVersion((prev) => prev + 1);
+    } catch (error) {
+      console.error("Ошибка сохранения:", error);
+      setMessage(error.message || "Не удалось сохранить");
+    }
+  };
+
+  const confirmCardDelete = async () => {
+    try {
+      setMessage("");
+
+      const response = await fetch(
+        `/api/DeleteObj?articule=${encodeURIComponent(clearArticle)}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(await getErrorText(response));
+      }
+
+      setCardDeleteModalOpen(false);
+      setMessage("Карточка удалена");
+
+      setTitle("");
+      setArticle("");
+      setPrice("");
+      setParamsTitle("Параметры");
+      setParams([]);
+      setPhotos([]);
+      setSelectedPhotoIndex(0);
+      setVersion(1);
+    } catch (error) {
+      console.error("Ошибка удаления:", error);
+      setMessage(error.message || "Не удалось удалить карточку");
+    }
+  };
+
+  const handleUploadPhotos = async () => {
+    setMessage("Загрузка фото сейчас недоступна: CORS на стороне хранилища");
   };
 
   return (
     <section className={styles.editing}>
-      <button type="button" className={styles.backButton}>
-        Вернуться назад
-      </button>
+      <div className={styles.topActions}>
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={() => window.history.back()}
+        >
+          Вернуться назад
+        </button>
+
+        <button
+          type="button"
+          className={styles.createButton}
+          onClick={createObject}
+        >
+          Создать объект
+        </button>
+      </div>
+
+      {message && <div className={styles.message}>{message}</div>}
+      {loading && <div className={styles.message}>Загрузка...</div>}
 
       <form className={styles.form}>
         <div className={styles.titleRow}>
@@ -238,14 +427,49 @@ export function Editing() {
         <div className={styles.content}>
           <div className={styles.gallery}>
             <div className={styles.previewList}>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
+              {photos.length > 0 ? (
+                photos.map((photo, index) => (
+                  <button
+                    key={`${photo.url_photos}-${index}`}
+                    type="button"
+                    className={`${styles.previewThumb} ${
+                      selectedPhotoIndex === index ? styles.previewThumbActive : ""
+                    }`}
+                    onClick={() => setSelectedPhotoIndex(index)}
+                  >
+                    <img src={photo.url_photos} alt={`preview-${index}`} />
+                  </button>
+                ))
+              ) : (
+                <>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                </>
+              )}
             </div>
 
-            <div className={styles.mainImage}></div>
+            <div className={styles.mainImage}>
+              {photos[selectedPhotoIndex]?.url_photos ? (
+                <img
+                  src={photos[selectedPhotoIndex].url_photos}
+                  alt={title}
+                  className={styles.mainImageTag}
+                />
+              ) : null}
+            </div>
+
+            <label className={styles.uploadLabel}>
+              Загрузить фото
+              <input
+                type="file"
+                multiple
+                className={styles.hiddenInput}
+                onChange={() => handleUploadPhotos()}
+              />
+            </label>
           </div>
 
           <div className={styles.info}>

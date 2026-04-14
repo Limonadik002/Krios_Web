@@ -6,8 +6,6 @@
   box-sizing: border-box;
 }
 
-
-
 .backButton {
   margin-bottom: 18px;
   padding: 0;
@@ -31,15 +29,33 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 42px;
+  margin-top: 32px;
+  margin-bottom: 80px;
 }
 
 .pageTitle {
-  margin-top: 32px;
-  margin-bottom: 80px;
+  margin: 0;
   font-size: 40px;
   font-weight: 700;
   color: #174a5d;
+  line-height: 1;
+}
+
+.titleInput {
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 40px;
+  font-weight: 700;
+  color: #174a5d;
+  font-family: Arial, sans-serif;
+  line-height: 1;
+}
+
+.titleEditButton {
+  margin: 0;
 }
 
 .content {
@@ -123,11 +139,18 @@
   background: transparent;
   cursor: pointer;
   line-height: 0;
+  flex-shrink: 0;
 }
 
 .iconButton svg {
   width: 28px;
   height: 28px;
+}
+
+.iconGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .addButton {
@@ -166,6 +189,34 @@
   color: #174a5d;
 }
 
+.infoInput,
+.paramsTitleInput,
+.paramInput {
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+}
+
+.infoInput {
+  font-size: 18px;
+  color: #006383;
+}
+
+.paramsTitleInput {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #174a5d;
+}
+
+.paramInput {
+  font-size: 18px;
+  color: #174a5d;
+}
+
 .actions {
   display: flex;
   flex-direction: column;
@@ -198,13 +249,68 @@
   color: #2d2d2d;
 }
 
-.titleEditButton{
-  margin-top: 32px;
-  margin-bottom: 80px;
-}
-
 .deleteButton:hover {
   background: #646d76;
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 99, 131, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  width: 100%;
+  max-width: 400px;
+  background: #edf4f7;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.modalTitle {
+  margin: 0 0 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1c4f63;
+}
+
+.modalText {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: #006383;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.cancelButton,
+.confirmDeleteButton,
+.confirmSaveButton {
+  min-width: 120px;
+  height: 40px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cancelButton {
+  background: #7f8f97;
+  color: #fff;
+}
+
+.confirmDeleteButton,
+.confirmSaveButton {
+  background: #006383;
+  color: #fff;
 }
 
 @media (max-width: 1200px) {
@@ -233,7 +339,8 @@
     flex-wrap: wrap;
   }
 
-  .pageTitle {
+  .pageTitle,
+  .titleInput {
     font-size: 30px;
   }
 

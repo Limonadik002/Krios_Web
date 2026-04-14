@@ -1,3 +1,4 @@
+import { useState } from "react";
 import styles from "./Editing.module.css";
 
 const EditIcon = () => (
@@ -22,6 +23,25 @@ const EditIcon = () => (
   </svg>
 );
 
+const CheckIcon = () => (
+  <svg
+    width="32"
+    height="32"
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M14 21.414L9 16.413L10.413 15L14 18.586L21.585 11L23 12.415L14 21.414Z"
+      fill="#006383"
+    />
+    <path
+      d="M16 2C13.2311 2 10.5243 2.82109 8.22202 4.35943C5.91973 5.89777 4.12532 8.08427 3.06569 10.6424C2.00607 13.2006 1.72882 16.0155 2.26901 18.7313C2.80921 21.447 4.14258 23.9416 6.10051 25.8995C8.05845 27.8574 10.553 29.1908 13.2687 29.731C15.9845 30.2712 18.7994 29.9939 21.3576 28.9343C23.9157 27.8747 26.1022 26.0803 27.6406 23.778C29.1789 21.4757 30 18.7689 30 16C30 12.287 28.525 8.72601 25.8995 6.1005C23.274 3.475 19.713 2 16 2ZM16 28C13.6266 28 11.3066 27.2962 9.33316 25.9776C7.35977 24.6591 5.8217 22.7849 4.91345 20.5922C4.0052 18.3995 3.76756 15.9867 4.23058 13.6589C4.69361 11.3311 5.83649 9.19295 7.51472 7.51472C9.19296 5.83649 11.3312 4.6936 13.6589 4.23058C15.9867 3.76755 18.3995 4.00519 20.5922 4.91345C22.7849 5.8217 24.6591 7.35977 25.9776 9.33316C27.2962 11.3065 28 13.6266 28 16C28 19.1826 26.7357 22.2348 24.4853 24.4853C22.2348 26.7357 19.1826 28 16 28Z"
+      fill="#006383"
+    />
+  </svg>
+);
+
 const PlusIcon = () => (
   <svg
     width="20"
@@ -39,26 +59,180 @@ const PlusIcon = () => (
   </svg>
 );
 
+const DeleteIcon = () => (
+  <svg
+    width="22"
+    height="28"
+    viewBox="0 0 22 28"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M21 4.71429H2.66667L4.33333 27H17.6667L19.3333 4.71429H1M11 10.2857V21.4286M15.1667 10.2857L14.3333 21.4286M6.83333 10.2857L7.66667 21.4286M7.66667 4.71429L8.5 1H13.5L14.3333 4.71429"
+      stroke="#006383"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 export function Editing() {
-  const params = ["Параметр 1", "Параметр 2", "Параметр 3"];
+  const [title, setTitle] = useState("Название товара");
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+
+  const [article, setArticle] = useState("Арт. a000000");
+  const [isEditingArticle, setIsEditingArticle] = useState(false);
+
+  const [price, setPrice] = useState("80 000₽");
+  const [isEditingPrice, setIsEditingPrice] = useState(false);
+
+  const [paramsTitle, setParamsTitle] = useState("Параметры");
+  const [isEditingParamsTitle, setIsEditingParamsTitle] = useState(false);
+
+  const [params, setParams] = useState([]);
+  const [editingParamIndex, setEditingParamIndex] = useState(null);
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [cardDeleteModalOpen, setCardDeleteModalOpen] = useState(false);
+
+  const handleParamChange = (index, value) => {
+    const updatedParams = [...params];
+    updatedParams[index] = value;
+    setParams(updatedParams);
+  };
+
+  const handleAddParam = () => {
+    setParams([...params, ""]);
+    setEditingParamIndex(params.length);
+  };
+
+  const openDeleteModal = (target) => {
+    setDeleteTarget(target);
+    setDeleteModalOpen(true);
+  };
+
+  const closeDeleteModal = () => {
+    setDeleteModalOpen(false);
+    setDeleteTarget(null);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteTarget) return;
+
+    switch (deleteTarget.type) {
+      case "title":
+        setTitle("");
+        setIsEditingTitle(false);
+        break;
+      case "article":
+        setArticle("");
+        setIsEditingArticle(false);
+        break;
+      case "price":
+        setPrice("");
+        setIsEditingPrice(false);
+        break;
+      case "paramsTitle":
+        setParamsTitle("");
+        setIsEditingParamsTitle(false);
+        break;
+      case "param":
+        setParams((prev) => prev.filter((_, i) => i !== deleteTarget.index));
+
+        if (editingParamIndex === deleteTarget.index) {
+          setEditingParamIndex(null);
+        } else if (
+          editingParamIndex !== null &&
+          editingParamIndex > deleteTarget.index
+        ) {
+          setEditingParamIndex(editingParamIndex - 1);
+        }
+        break;
+      default:
+        break;
+    }
+
+    closeDeleteModal();
+  };
+
+  const openSaveModal = () => {
+    setSaveModalOpen(true);
+  };
+
+  const closeSaveModal = () => {
+    setSaveModalOpen(false);
+  };
+
+  const openCardDeleteModal = () => {
+    setCardDeleteModalOpen(true);
+  };
+
+  const closeCardDeleteModal = () => {
+    setCardDeleteModalOpen(false);
+  };
+
+  const confirmSave = () => {
+    setSaveModalOpen(false);
+    console.log("Изменения сохранены");
+  };
+
+  const confirmCardDelete = () => {
+    setCardDeleteModalOpen(false);
+    console.log("Карточка удалена");
+  };
 
   return (
     <section className={styles.editing}>
-      
-
       <button type="button" className={styles.backButton}>
         Вернуться назад
       </button>
 
       <form className={styles.form}>
         <div className={styles.titleRow}>
-          <h1 className={styles.pageTitle}>Название товара</h1>
-           <button
-            type="button"
-            className={`${styles.iconButton} ${styles.titleEditButton}`}
-          >
-            <EditIcon />
-           </button>
+          {isEditingTitle ? (
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => setIsEditingTitle(false)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  setIsEditingTitle(false);
+                }
+              }}
+              className={styles.titleInput}
+              autoFocus
+            />
+          ) : (
+            <h1 className={styles.pageTitle}>{title}</h1>
+          )}
+
+          <div className={styles.iconGroup}>
+            <button
+              type="button"
+              className={`${styles.iconButton} ${styles.titleEditButton}`}
+              onClick={() => setIsEditingTitle((prev) => !prev)}
+              aria-label={
+                isEditingTitle ? "Подтвердить название" : "Редактировать название"
+              }
+            >
+              {isEditingTitle ? <CheckIcon /> : <EditIcon />}
+            </button>
+
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={() => openDeleteModal({ type: "title" })}
+              aria-label="Удалить название"
+            >
+              <DeleteIcon />
+            </button>
+          </div>
         </div>
 
         <div className={styles.content}>
@@ -76,27 +250,143 @@ export function Editing() {
 
           <div className={styles.info}>
             <div className={styles.infoRow}>
-              <span className={styles.infoText}>Арт. а000000</span>
-              <button type="button" className={styles.iconButton}>
-                <EditIcon />
-              </button>
+              {isEditingArticle ? (
+                <input
+                  type="text"
+                  value={article}
+                  onChange={(e) => setArticle(e.target.value)}
+                  onBlur={() => setIsEditingArticle(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setIsEditingArticle(false);
+                    }
+                  }}
+                  className={styles.infoInput}
+                  autoFocus
+                />
+              ) : (
+                <span className={styles.infoText}>{article}</span>
+              )}
+
+              <div className={styles.iconGroup}>
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  onClick={() => setIsEditingArticle((prev) => !prev)}
+                  aria-label={
+                    isEditingArticle
+                      ? "Подтвердить артикул"
+                      : "Редактировать артикул"
+                  }
+                >
+                  {isEditingArticle ? <CheckIcon /> : <EditIcon />}
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  onClick={() => openDeleteModal({ type: "article" })}
+                  aria-label="Удалить артикул"
+                >
+                  <DeleteIcon />
+                </button>
+              </div>
             </div>
 
             <div className={styles.infoRow}>
-              <span className={styles.price}>80 000₽</span>
-              <button type="button" className={styles.iconButton}>
-                <EditIcon />
-              </button>
+              {isEditingPrice ? (
+                <input
+                  type="text"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  onBlur={() => setIsEditingPrice(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setIsEditingPrice(false);
+                    }
+                  }}
+                  className={styles.infoInput}
+                  autoFocus
+                />
+              ) : (
+                <span className={styles.price}>{price}</span>
+              )}
+
+              <div className={styles.iconGroup}>
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  onClick={() => setIsEditingPrice((prev) => !prev)}
+                  aria-label={
+                    isEditingPrice ? "Подтвердить цену" : "Редактировать цену"
+                  }
+                >
+                  {isEditingPrice ? <CheckIcon /> : <EditIcon />}
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  onClick={() => openDeleteModal({ type: "price" })}
+                  aria-label="Удалить цену"
+                >
+                  <DeleteIcon />
+                </button>
+              </div>
             </div>
 
             <div className={styles.paramsHeader}>
-              <h2 className={styles.paramsTitle}>Параметры</h2>
-              <button type="button" className={styles.iconButton}>
-                <EditIcon />
-              </button>
+              {isEditingParamsTitle ? (
+                <input
+                  type="text"
+                  value={paramsTitle}
+                  onChange={(e) => setParamsTitle(e.target.value)}
+                  onBlur={() => setIsEditingParamsTitle(false)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      setIsEditingParamsTitle(false);
+                    }
+                  }}
+                  className={styles.paramsTitleInput}
+                  autoFocus
+                />
+              ) : (
+                <h2 className={styles.paramsTitle}>{paramsTitle}</h2>
+              )}
+
+              <div className={styles.iconGroup}>
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  onClick={() => setIsEditingParamsTitle((prev) => !prev)}
+                  aria-label={
+                    isEditingParamsTitle
+                      ? "Подтвердить заголовок параметров"
+                      : "Редактировать заголовок параметров"
+                  }
+                >
+                  {isEditingParamsTitle ? <CheckIcon /> : <EditIcon />}
+                </button>
+
+                <button
+                  type="button"
+                  className={styles.iconButton}
+                  onClick={() => openDeleteModal({ type: "paramsTitle" })}
+                  aria-label="Удалить заголовок параметров"
+                >
+                  <DeleteIcon />
+                </button>
+              </div>
             </div>
 
-            <button type="button" className={styles.addButton}>
+            <button
+              type="button"
+              className={styles.addButton}
+              onClick={handleAddParam}
+            >
               <PlusIcon />
               <span>Добавить параметр</span>
             </button>
@@ -104,10 +394,52 @@ export function Editing() {
             <div className={styles.paramsList}>
               {params.map((param, index) => (
                 <div key={index} className={styles.paramItem}>
-                  <p>{param}</p>
-                  <button type="button" className={styles.iconButton}>
-                    <EditIcon />
-                  </button>
+                  {editingParamIndex === index ? (
+                    <input
+                      type="text"
+                      value={param}
+                      onChange={(e) => handleParamChange(index, e.target.value)}
+                      onBlur={() => setEditingParamIndex(null)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          setEditingParamIndex(null);
+                        }
+                      }}
+                      className={styles.paramInput}
+                      autoFocus
+                    />
+                  ) : (
+                    <p>{param || "Новый параметр"}</p>
+                  )}
+
+                  <div className={styles.iconGroup}>
+                    <button
+                      type="button"
+                      className={styles.iconButton}
+                      onClick={() =>
+                        setEditingParamIndex(
+                          editingParamIndex === index ? null : index
+                        )
+                      }
+                      aria-label={
+                        editingParamIndex === index
+                          ? "Подтвердить параметр"
+                          : "Редактировать параметр"
+                      }
+                    >
+                      {editingParamIndex === index ? <CheckIcon /> : <EditIcon />}
+                    </button>
+
+                    <button
+                      type="button"
+                      className={styles.iconButton}
+                      onClick={() => openDeleteModal({ type: "param", index })}
+                      aria-label="Удалить параметр"
+                    >
+                      <DeleteIcon />
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
@@ -115,14 +447,110 @@ export function Editing() {
         </div>
 
         <div className={styles.actions}>
-          <button type="submit" className={styles.saveButton}>
+          <button
+            type="button"
+            className={styles.saveButton}
+            onClick={openSaveModal}
+          >
             Сохранить
           </button>
-          <button type="button" className={styles.deleteButton}>
+
+          <button
+            type="button"
+            className={styles.deleteButton}
+            onClick={openCardDeleteModal}
+          >
             Удалить
           </button>
         </div>
       </form>
+
+      {deleteModalOpen && (
+        <div className={styles.modalOverlay} onClick={closeDeleteModal}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>Вы уверены в удалении?</h3>
+            <p className={styles.modalText}>
+              Вы не сможете восстановить поле после удаления!
+            </p>
+
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={closeDeleteModal}
+              >
+                Отмена
+              </button>
+
+              <button
+                type="button"
+                className={styles.confirmDeleteButton}
+                onClick={confirmDelete}
+              >
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {saveModalOpen && (
+        <div className={styles.modalOverlay} onClick={closeSaveModal}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>Сохранить изменения?</h3>
+            <p className={styles.modalText}>
+              Если вы не сохраните, изменения будут потеряны!
+            </p>
+
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.confirmSaveButton}
+                onClick={confirmSave}
+              >
+                Сохранить
+              </button>
+
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={closeSaveModal}
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {cardDeleteModalOpen && (
+        <div className={styles.modalOverlay} onClick={closeCardDeleteModal}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.modalTitle}>Вы уверены в удалении?</h3>
+            <p className={styles.modalText}>
+              Вы не сможете восстановить карточку после удаления!
+            </p>
+
+            <div className={styles.modalActions}>
+              <button
+                type="button"
+                className={styles.cancelButton}
+                onClick={closeCardDeleteModal}
+              >
+                Отмена
+              </button>
+
+              <button
+                type="button"
+                className={styles.confirmDeleteButton}
+                onClick={confirmCardDelete}
+              >
+                Удалить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

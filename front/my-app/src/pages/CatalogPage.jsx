@@ -1,20 +1,19 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Card from "../components/Card";
-import styles from "./Catolog.module.css";
+import styles from "./Catalog.module.css";
 
 function CatalogPage() {
-  const navigate = useNavigate();
-
+  const location = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalCount, setTotalCount] = useState(null);
+  const [searchMode, setSearchMode] = useState(false);
 
   const ITEMS_PER_PAGE = 20;
-  const API_BASE_URL = "http://26.58.122.182:8080";
 
   const getMainPhoto = (photos) => {
     if (!photos || photos.length === 0) return "";
@@ -23,48 +22,55 @@ function CatalogPage() {
   };
 
   const fetchProducts = async (page) => {
-  setLoading(true);
-  setError(null);
+    setLoading(true);
+    setError(null);
 
-  try {
-    // 1. Один раз получаем ВСЕ товары (с limit=180)
-    if (totalCount === null) {
-      const allResponse = await fetch(
-        `${API_BASE_URL}/GetObjects?page=1&limit=180`
-      );
-      const allData = await allResponse.json();
-      const allProducts = Array.isArray(allData) ? allData : (allData.objects || []);
+    try {
+      // Если пришли результаты поиска
+      if (location.state?.searchResults) {
+        setProducts(location.state.searchResults);
+        setTotalCount(location.state.searchResults.length);
+        setTotalPages(Math.ceil(location.state.searchResults.length / ITEMS_PER_PAGE));
+        setSearchMode(true);
+        // Очищаем state чтобы при обновлении не оставаться в режиме поиска
+        window.history.replaceState({}, document.title);
+        return;
+      }
+
+      // Обычная загрузка всех товаров
+      if (totalCount === null) {
+        const allResponse = await fetch(`/api/GetObjects?page=1&limit=180`);
+        const allData = await allResponse.json();
+        const allProducts = Array.isArray(allData) ? allData : (allData.objects || []);
+        
+        setTotalCount(allProducts.length);
+        setTotalPages(Math.ceil(allProducts.length / ITEMS_PER_PAGE));
+      }
       
-      setTotalCount(allProducts.length);
-      setTotalPages(Math.ceil(allProducts.length / ITEMS_PER_PAGE));
+      const response = await fetch(`/api/GetObjects?page=${page}&limit=${ITEMS_PER_PAGE}`);
+      
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const productsOnPage = Array.isArray(data) ? data : (data.objects || []);
+      
+      setProducts(productsOnPage);
+      setSearchMode(false);
+      
+    } catch (err) {
+      console.error("Ошибка загрузки товаров:", err);
+      setError(err.message);
+      setProducts([]);
+    } finally {
+      setLoading(false);
     }
-    
-    // 2. Запрашиваем нужную страницу (с нормальным limit=20)
-    const response = await fetch(
-      `${API_BASE_URL}/GetObjects?page=${page}&limit=${ITEMS_PER_PAGE}`
-    );
-    
-    if (!response.ok) {
-      throw new Error(`Ошибка сервера: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    const productsOnPage = Array.isArray(data) ? data : (data.objects || []);
-    
-    setProducts(productsOnPage);
-    
-  } catch (err) {
-    console.error("Ошибка загрузки товаров:", err);
-    setError(err.message);
-    setProducts([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchProducts(currentPage);
-  }, [currentPage]);
+  }, [currentPage, location.state]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -100,10 +106,9 @@ function CatalogPage() {
     return (
       <div className={styles["catalog-container"]}>
         <div className={styles["catalog-wraper"]}>
-          <button className={styles.back} onClick={() => navigate("/Admin")}>
-            Вернуться назад
-          </button>
-          <h1 className={styles["catalog-title"]}>Каталог товаров</h1>
+          <h1 className={styles["catalog-title"]}>
+            {searchMode ? "Результаты поиска" : "Каталог товаров"}
+          </h1>
           <div className={styles.loading}>Загрузка товаров...</div>
         </div>
       </div>
@@ -114,9 +119,6 @@ function CatalogPage() {
     return (
       <div className={styles["catalog-container"]}>
         <div className={styles["catalog-wraper"]}>
-          <button className={styles.back} onClick={() => navigate("/Admin")}>
-            Вернуться назад
-          </button>
           <h1 className={styles["catalog-title"]}>Каталог товаров</h1>
           <div className={styles.error}>
             Ошибка: {error}
@@ -128,56 +130,59 @@ function CatalogPage() {
   }
 
   return (
-    <main className="catalog-page">
-      <div className={styles["catalog-container"]}>
-        <div className={styles["catalog-wraper"]}>
-          <button
-            className={styles.back}
-            onClick={() => navigate("/Admin")}
-            type="button"
-          >
-            Вернуться назад
-          </button>
+    <div className={styles["catalog-container"]}>
+      <div className={styles["catalog-wraper"]}>
+        <h1 className={styles["catalog-title"]}>
+          {location.state?.searchQuery 
+            ? `Результаты поиска: "${location.state.searchQuery}"`
+            : location.state?.selectedCategory
+            ? `Категория: ${location.state.selectedCategory}`
+            : "Каталог товаров"
+          }
+        </h1>
 
-          <h1 className={styles["catalog-title"]}>Каталог товаров</h1>
-
-          <div className={styles["catalog-grid"]}>
-            {products.map((product) => (
-              <Card
-                key={product.article}
-                id={product.article}
-                art={product.article}
-                title={product.name}
-                price={product.price}
-                imgSrc={getMainPhoto(product.photos)}
-              />
-            ))}
+        {products.length === 0 && (
+          <div className={styles["no-results"]}>
+            Ничего не найдено
           </div>
+        )}
 
-          {totalPages > 1 && (
-            <div className={styles.pagination}>
-              <button
-                className={styles.arrow}
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              >
-                ←
-              </button>
-
-              {renderPaginationButtons()}
-
-              <button
-                className={styles.arrow}
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              >
-                →
-              </button>
-            </div>
-          )}
+        <div className={styles["catalog-grid"]}>
+          {products.map((product) => (
+            <Card
+              key={product.article}
+              id={product.article}
+              art={product.article}
+              title={product.name}
+              price={product.price}
+              imgSrc={getMainPhoto(product.photos)}
+            />
+          ))}
         </div>
+
+        {totalPages > 1 && (
+          <div className={styles.pagination}>
+            <button
+              className={styles.arrow}
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              ←
+            </button>
+
+            {renderPaginationButtons()}
+
+            <button
+              className={styles.arrow}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              →
+            </button>
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
 }
 

@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import styles from "./Card.module.css";
 
-function Card({ id, art, title, price, imgSrc, photos }) {
+function Card({ id, art, title, price, imgSrc }) {
   const navigate = useNavigate();
 
   const handleEdit = () => {
@@ -12,10 +12,8 @@ function Card({ id, art, title, price, imgSrc, photos }) {
     return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
   };
 
-  // Функция для получения нормальной картинки
   const getImageSrc = () => {
     if (!imgSrc || imgSrc.includes('example.com')) {
-      // Заглушка с названием товара
       return `https://placehold.co/300x300/006383/white?text=${encodeURIComponent(title)}`;
     }
     return imgSrc;

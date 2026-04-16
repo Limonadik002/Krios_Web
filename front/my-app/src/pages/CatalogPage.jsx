@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
-import styles from "./Catolog.module.css";
+import styles from "./Catalog.module.css";
 
 function CatalogPage() {
   const navigate = useNavigate();

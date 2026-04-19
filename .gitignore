@@ -1,0 +1,7 @@
+# Чувствительные файлы
+.env
+backend/.env
+*.log
+
+# Docker
+*.pid

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	midlwareAuth "github.com/vova1001/krios_proj/midlware"
 	m "github.com/vova1001/krios_proj/models"
 )
 
@@ -17,13 +18,14 @@ func NewHandler(service *partService) *partHandler {
 }
 
 func (h *partHandler) RegisterRouter(mux *http.ServeMux) {
-	mux.HandleFunc("POST /Presign", h.PresignedURL)
-	mux.HandleFunc("POST /CreateNewObj", h.CreateObj)
-	mux.HandleFunc("PUT /UpdateObj", h.UpdateObj)
-	mux.HandleFunc("POST /AddOrders", h.AddOrders)
-	mux.HandleFunc("GET /GetObjects", h.GetObjects)
-	mux.HandleFunc("GET /SearchObjects", h.SearchObj)
-	mux.HandleFunc("DELETE /DeleteObj", h.DeleteObj)
+	mux.HandleFunc("POST /Presign", midlwareAuth.AuthMidlleware(h.PresignedURL))
+	mux.HandleFunc("POST /CreateNewObj", midlwareAuth.AuthMidlleware(h.CreateObj))
+	mux.HandleFunc("PUT /UpdateObj", midlwareAuth.AuthMidlleware(h.UpdateObj))
+	mux.HandleFunc("POST /AddOrders", midlwareAuth.AuthMidlleware(h.AddOrders))
+	mux.HandleFunc("GET /GetObjects", midlwareAuth.AuthMidlleware(h.GetObjects))
+	mux.HandleFunc("GET /SearchObjects", midlwareAuth.AuthMidlleware(h.SearchObj))
+	mux.HandleFunc("DELETE /DeleteObj", midlwareAuth.AuthMidlleware(h.DeleteObj))
+	mux.HandleFunc("POST /RegisterAdmin", h.RegisterAdmin)
 }
 
 func (h *partHandler) CreateObj(w http.ResponseWriter, r *http.Request) {
@@ -148,4 +150,30 @@ func (h *partHandler) AddOrders(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *partHandler) RegisterAdmin(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		UserPass string `json:"password"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, "not valid json", 400)
+		return
+	}
+
+	token, err := h.service.RegisterAdmin(req.UserPass)
+	if err != nil {
+		if err.Error() == "Error pass" {
+			http.Error(w, "invalid password", 401)
+			return
+		}
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(token)
 }

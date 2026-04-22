@@ -5,16 +5,17 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/smtp"
+	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/google/uuid"
+	"github.com/golang-jwt/jwt"
+	c "github.com/vova1001/krios_proj/config"
 	m "github.com/vova1001/krios_proj/models"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-
-	c "github.com/vova1001/krios_proj/config"
+	"github.com/google/uuid"
 )
 
 type partService struct {
@@ -68,6 +69,23 @@ func (s *partService) GetObj(page, limit int) ([]m.Object, error) {
 	}
 
 	return objects, err
+}
+
+func (s *partService) RegisterAdmin(UserPass string) (string, error) {
+	PASS := os.Getenv("PASS")
+	JWT_KEY := os.Getenv("JWT_KEY")
+	if UserPass != PASS {
+		return "", fmt.Errorf("Error pass")
+	}
+	claim := jwt.MapClaims{
+		"exp": time.Now().Add(time.Hour * 24).Unix(),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claim)
+	ResToken, err := token.SignedString([]byte(JWT_KEY))
+	if err != nil {
+		return "", fmt.Errorf("error signed:%w", err)
+	}
+	return ResToken, nil
 }
 
 func (s *partService) SearchObj(searchName string) (*[]m.RespSearch, error) {

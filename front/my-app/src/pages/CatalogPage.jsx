@@ -14,7 +14,7 @@ function CatalogPage() {
   const [totalCount, setTotalCount] = useState(null);
 
   const ITEMS_PER_PAGE = 20;
-  const API_BASE_URL = "http://localhost:8080";
+  const API_BASE_URL = "";
 
   const getMainPhoto = (photos) => {
     if (!photos || photos.length === 0) return "";

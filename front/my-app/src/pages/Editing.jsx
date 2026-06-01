@@ -39,7 +39,7 @@ const PlusIcon = () => (
   </svg>
 );
 
-export function Editing() {
+export default function Editing() {
   const params = ["Параметр 1", "Параметр 2", "Параметр 3"];
 
   return (

@@ -1,33 +1,51 @@
-.card-wrapper{
+.card-wrapper {
   width: 100%;
   max-width: 416px;
   justify-self: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
-
-.card-wrapper img{
-  aspect-ratio: 1/1;
+.card-wrapper img {
+  aspect-ratio: 1 / 1;
   width: 100%;
   height: auto;
   background-color: #86A1A9;
   margin-bottom: 24px;
 }
 
-.card-wrapper h2{
+.card-wrapper h2 {
   font-size: 32px;
   color: #14404E;
   font-weight: 600;
   margin-bottom: 28px;
+
+  /* чтобы заголовки в 1 и 2 строки не ломали выравнивание /
+  min-height: 76px;
+
+  / чтобы длинные слова нормально переносились /
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
-.card-wrapper p{
+.card-wrapper p {
   font-size: 24px;
   color: #006383;
   font-weight: 500;
   margin-bottom: 48px;
+
+  / чтобы длинный текст не вылезал за карточку /
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
-.change{
+.actions {
+  / прижимает кнопки вниз карточки */
+  margin-top: auto;
+}
+
+.change {
   outline: 0;
   padding: 16px 0;
   width: 100%;
@@ -39,7 +57,8 @@
   border-radius: 8px;
   margin-bottom: 24px;
 }
-.delete{
+
+.delete {
   width: 100%;
   outline: 0;
   padding: 16px 0;
@@ -50,3 +69,7 @@
   cursor: pointer;
   border-radius: 8px;
 }
+
+
+ 
+ 

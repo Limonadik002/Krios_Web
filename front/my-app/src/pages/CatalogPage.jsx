@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Card from "../components/Card";
+import { API_ROUTES } from "../api";
+import { authHeader } from "../auth";
 import styles from "./Catolog.module.css";
 
 function CatalogPage() {
@@ -14,7 +16,6 @@ function CatalogPage() {
   const [totalCount, setTotalCount] = useState(null);
 
   const ITEMS_PER_PAGE = 20;
-  const API_BASE_URL = "http://localhost:8080";
 
   const getMainPhoto = (photos) => {
     if (!photos || photos.length === 0) return "";
@@ -23,44 +24,44 @@ function CatalogPage() {
   };
 
   const fetchProducts = async (page) => {
-  setLoading(true);
-  setError(null);
+    setLoading(true);
+    setError(null);
 
-  try {
-    // 1. Один раз получаем ВСЕ товары (с limit=180)
-    if (totalCount === null) {
-      const allResponse = await fetch(
-        `${API_BASE_URL}/GetObjects?page=1&limit=180`
-      );
-      const allData = await allResponse.json();
-      const allProducts = Array.isArray(allData) ? allData : (allData.objects || []);
+    try {
+      // 1. Один раз получаем ВСЕ товары
+      if (totalCount === null) {
+        const allResponse = await fetch(API_ROUTES.getObjects(1, 180), {
+          headers: { ...authHeader() },
+        });
+        const allData = await allResponse.json();
+        const allProducts = Array.isArray(allData) ? allData : (allData.objects || []);
+        
+        setTotalCount(allProducts.length);
+        setTotalPages(Math.ceil(allProducts.length / ITEMS_PER_PAGE));
+      }
       
-      setTotalCount(allProducts.length);
-      setTotalPages(Math.ceil(allProducts.length / ITEMS_PER_PAGE));
+      // 2. Запрашиваем нужную страницу
+      const response = await fetch(API_ROUTES.getObjects(page, ITEMS_PER_PAGE), {
+        headers: { ...authHeader() },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Ошибка сервера: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      const productsOnPage = Array.isArray(data) ? data : (data.objects || []);
+      
+      setProducts(productsOnPage);
+      
+    } catch (err) {
+      console.error("Ошибка загрузки товаров:", err);
+      setError(err.message);
+      setProducts([]);
+    } finally {
+      setLoading(false);
     }
-    
-    // 2. Запрашиваем нужную страницу (с нормальным limit=20)
-    const response = await fetch(
-      `${API_BASE_URL}/GetObjects?page=${page}&limit=${ITEMS_PER_PAGE}`
-    );
-    
-    if (!response.ok) {
-      throw new Error(`Ошибка сервера: ${response.status}`);
-    }
-    
-    const data = await response.json();
-    const productsOnPage = Array.isArray(data) ? data : (data.objects || []);
-    
-    setProducts(productsOnPage);
-    
-  } catch (err) {
-    console.error("Ошибка загрузки товаров:", err);
-    setError(err.message);
-    setProducts([]);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   useEffect(() => {
     fetchProducts(currentPage);

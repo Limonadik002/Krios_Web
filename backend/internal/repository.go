@@ -144,7 +144,7 @@ func (d *partRepo) GetObject(art string) (m.Object, error) {
 	err := d.db.QueryRow(`SELECT 
 	name, price, parametrs_name,
 	characteristics FROM objects 
-	WHERE object_article = $1`, art).Scan(&Object.Name, &Object.Price, &Object.ParametrsName, &charsJSON)
+	WHERE article = $1`, art).Scan(&Object.Name, &Object.Price, &Object.ParametrsName, &charsJSON)
 
 	if err != nil {
 		return m.Object{}, fmt.Errorf("err select from art", art, err.Error())

@@ -60,7 +60,7 @@ func (s *partService) UpdateObj(UpdateObj m.Object) error {
 	return nil
 }
 
-func (s *partService) GetObj(page, limit int) ([]m.Object, error) {
+func (s *partService) GetObjects(page, limit int) ([]m.Object, error) {
 	offset := (page - 1) * limit
 	objects, err := s.repo.GetObj(offset, limit)
 
@@ -69,6 +69,14 @@ func (s *partService) GetObj(page, limit int) ([]m.Object, error) {
 	}
 
 	return objects, err
+}
+
+func (s *partService) GetObject(art string) (m.Object, error) {
+	obj, err := s.repo.GetObject(art)
+	if err != nil {
+		return m.Object{}, err
+	}
+	return obj, nil
 }
 
 func (s *partService) RegisterAdmin(UserPass string) (string, error) {

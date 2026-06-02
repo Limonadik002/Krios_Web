@@ -6,8 +6,6 @@
   box-sizing: border-box;
 }
 
-
-
 .backButton {
   margin-bottom: 18px;
   padding: 0;
@@ -31,12 +29,13 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 42px;
+  margin-top: 32px;
+  margin-bottom: 80px;
+  width: fit-content;
 }
 
 .pageTitle {
-  margin-top: 32px;
-  margin-bottom: 80px;
+  margin: 0;
   font-size: 40px;
   font-weight: 700;
   color: #174a5d;
@@ -118,11 +117,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+
+  width: 34px;
+  height: 34px;
   padding: 0;
+
   border: none;
   background: transparent;
   cursor: pointer;
   line-height: 0;
+  flex-shrink: 0;
 }
 
 .iconButton svg {
@@ -226,6 +230,8 @@
 
   .titleRow {
     flex-wrap: wrap;
+    margin-top: 24px;
+    margin-bottom: 42px;
   }
 
   .pageTitle {
@@ -259,4 +265,50 @@
   .deleteButton {
     width: 100%;
   }
+}
+.titleInput {
+  width: 420px;
+  height: 48px;
+  padding: 0 12px;
+  border: 2px solid #006383;
+  border-radius: 6px;
+  background: transparent;
+  color: #174a5d;
+  font-size: 40px;
+  font-weight: 700;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.smallInput {
+  width: 180px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #006383;
+  border-radius: 4px;
+  background: transparent;
+  color: #006383;
+  font-size: 18px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.paramInput {
+  width: 180px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #006383;
+  border-radius: 4px;
+  background: transparent;
+  color: #174a5d;
+  font-size: 18px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.titleInput:focus,
+.smallInput:focus,
+.paramInput:focus {
+  border-color: #004f69;
+  background: rgba(255, 255, 255, 0.45);
 }

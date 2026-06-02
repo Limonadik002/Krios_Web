@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { API_ROUTES } from "../api";
 import styles from "./Editing.module.css";
 
 const EditIcon = () => (
@@ -22,6 +25,43 @@ const EditIcon = () => (
   </svg>
 );
 
+const TrashIcon = () => (
+  <svg
+    width="30"
+    height="30"
+    viewBox="0 0 30 30"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M24 5.71429H5.66667L7.33333 28H20.6667L22.3333 5.71429H4M14 11.2857V22.4286M18.1667 11.2857L17.3333 22.4286M9.83333 11.2857L10.6667 22.4286M10.6667 5.71429L11.5 2H16.5L17.3333 5.71429"
+      stroke="#006383"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg
+    width="32"
+    height="32"
+    viewBox="0 0 32 32"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M14 21.414L9 16.413L10.413 15L14 18.586L21.585 11L23 12.415L14 21.414Z"
+      fill="#006383"
+    />
+    <path
+      d="M16 2C13.2311 2 10.5243 2.82109 8.22202 4.35943C5.91973 5.89777 4.12532 8.08427 3.06569 10.6424C2.00607 13.2006 1.72882 16.0155 2.26901 18.7313C2.80921 21.447 4.14258 23.9416 6.10051 25.8995C8.05845 27.8574 10.553 29.1908 13.2687 29.731C15.9845 30.2712 18.7994 29.9939 21.3576 28.9343C23.9157 27.8747 26.1022 26.0803 27.6406 23.778C29.1789 21.4757 30 18.7689 30 16C30 12.287 28.525 8.72601 25.8995 6.1005C23.274 3.475 19.713 2 16 2ZM16 28C13.6266 28 11.3066 27.2962 9.33316 25.9776C7.35977 24.6591 5.8217 22.7849 4.91345 20.5922C4.0052 18.3995 3.76756 15.9867 4.23058 13.6589C4.69361 11.3311 5.83649 9.19295 7.51472 7.51472C9.19296 5.83649 11.3312 4.6936 13.6589 4.23058C15.9867 3.76755 18.3995 4.00519 20.5922 4.91345C22.7849 5.8217 24.6591 7.35977 25.9776 9.33316C27.2962 11.3065 28 13.6266 28 16C28 19.1826 26.7357 22.2348 24.4853 24.4853C22.2348 26.7357 19.1826 28 16 28Z"
+      fill="#006383"
+    />
+  </svg>
+);
+
 const PlusIcon = () => (
   <svg
     width="20"
@@ -39,23 +79,244 @@ const PlusIcon = () => (
   </svg>
 );
 
-export default function Editing() {
-  const params = ["Параметр 1", "Параметр 2", "Параметр 3"];
+function Editing() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
+  const [title, setTitle] = useState("");
+  const [article, setArticle] = useState("");
+  const [price, setPrice] = useState("");
+  const [params, setParams] = useState([]);
+
+  const [editingField, setEditingField] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const getToken = () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("Нет токена авторизации");
+    }
+
+    return token;
+  };
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const token = getToken();
+
+        const response = await fetch(API_ROUTES.getProductById(id), {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Не удалось загрузить товар");
+        }
+
+        const product = await response.json();
+
+        setTitle(product.title || product.name || "");
+        setArticle(product.article || product.vendor_code || "");
+        setPrice(product.price || "");
+        setParams(product.params || product.parameters || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  const startEdit = (fieldName) => {
+    setEditingField(fieldName);
+  };
+
+  const saveEdit = () => {
+    setEditingField(null);
+  };
+
+  const deleteTitle = () => {
+    setTitle("");
+    setEditingField(null);
+  };
+
+  const deleteArticle = () => {
+    setArticle("");
+    setEditingField(null);
+  };
+
+  const deletePrice = () => {
+    setPrice("");
+    setEditingField(null);
+  };
+
+  const addParam = () => {
+    setParams((prev) => [...prev, `Параметр ${prev.length + 1}`]);
+  };
+
+  const changeParam = (index, value) => {
+    setParams((prev) =>
+      prev.map((param, paramIndex) =>
+        paramIndex === index ? value : param
+      )
+    );
+  };
+
+  const deleteParam = (index) => {
+    setParams((prev) =>
+      prev.filter((_, paramIndex) => paramIndex !== index)
+    );
+
+    setEditingField(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const productData = {
+      title,
+      article,
+      price,
+      params,
+    };
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const token = getToken();
+
+      const response = await fetch(API_ROUTES.updateProduct(id), {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(productData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Не удалось сохранить товар");
+      }
+
+      navigate("/Catalog");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const token = getToken();
+
+      const response = await fetch(API_ROUTES.deleteProduct(id), {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Не удалось удалить товар");
+      }
+
+      navigate("/Catalog");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return <div className={styles.loading}>Загрузка...</div>;
+  }
+
+  if (error) {
+    return <div className={styles.error}>{error}</div>;
+  }
 
   return (
     <section className={styles.editing}>
-      
-
-      <button type="button" className={styles.backButton}>
+      <button
+        type="button"
+        className={styles.backButton}
+        onClick={() => navigate(-1)}
+      >
         Вернуться назад
       </button>
 
-      <form className={styles.form}>
+      <form className={styles.form} onSubmit={handleSubmit}>
         <div className={styles.titleRow}>
-          <h1 className={styles.pageTitle}>Название товара</h1>
-          <button type="button" className={styles.iconButton}>
-            <EditIcon />
-          </button>
+          {editingField === "title" ? (
+            <>
+              <input
+                className={styles.titleInput}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    saveEdit();
+                  }
+                }}
+              />
+
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={saveEdit}
+              >
+                <CheckIcon />
+              </button>
+
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={deleteTitle}
+              >
+                <TrashIcon />
+              </button>
+            </>
+          ) : (
+            <>
+              <h1 className={styles.pageTitle}>
+                {title || "Без названия"}
+              </h1>
+
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={() => startEdit("title")}
+              >
+                <EditIcon />
+              </button>
+
+              <button
+                type="button"
+                className={styles.iconButton}
+                onClick={deleteTitle}
+              >
+                <TrashIcon />
+              </button>
+            </>
+          )}
         </div>
 
         <div className={styles.content}>
@@ -73,27 +334,128 @@ export default function Editing() {
 
           <div className={styles.info}>
             <div className={styles.infoRow}>
-              <span className={styles.infoText}>Арт. а000000</span>
-              <button type="button" className={styles.iconButton}>
-                <EditIcon />
-              </button>
+              {editingField === "article" ? (
+                <>
+                  <input
+                    className={styles.smallInput}
+                    value={article}
+                    onChange={(e) => setArticle(e.target.value)}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        saveEdit();
+                      }
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    onClick={saveEdit}
+                  >
+                    <CheckIcon />
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    onClick={deleteArticle}
+                  >
+                    <TrashIcon />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className={styles.infoText}>
+                    {article || "Артикул не указан"}
+                  </span>
+
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    onClick={() => startEdit("article")}
+                  >
+                    <EditIcon />
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    onClick={deleteArticle}
+                  >
+                    <TrashIcon />
+                  </button>
+                </>
+              )}
             </div>
 
             <div className={styles.infoRow}>
-              <span className={styles.price}>80 000₽</span>
-              <button type="button" className={styles.iconButton}>
-                <EditIcon />
-              </button>
+              {editingField === "price" ? (
+                <>
+                  <input
+                    className={styles.smallInput}
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        saveEdit();
+                      }
+                    }}
+                  />
+
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    onClick={saveEdit}
+                  >
+                    <CheckIcon />
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    onClick={deletePrice}
+                  >
+                    <TrashIcon />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span className={styles.price}>
+                    {price || "Цена не указана"}
+                  </span>
+
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    onClick={() => startEdit("price")}
+                  >
+                    <EditIcon />
+                  </button>
+
+                  <button
+                    type="button"
+                    className={styles.iconButton}
+                    onClick={deletePrice}
+                  >
+                    <TrashIcon />
+                  </button>
+                </>
+              )}
             </div>
 
             <div className={styles.paramsHeader}>
               <h2 className={styles.paramsTitle}>Параметры</h2>
-              <button type="button" className={styles.iconButton}>
-                <EditIcon />
-              </button>
             </div>
 
-            <button type="button" className={styles.addButton}>
+            <button
+              type="button"
+              className={styles.addButton}
+              onClick={addParam}
+            >
               <PlusIcon />
               <span>Добавить параметр</span>
             </button>
@@ -101,10 +463,60 @@ export default function Editing() {
             <div className={styles.paramsList}>
               {params.map((param, index) => (
                 <div key={index} className={styles.paramItem}>
-                  <p>{param}</p>
-                  <button type="button" className={styles.iconButton}>
-                    <EditIcon />
-                  </button>
+                  {editingField === `param-${index}` ? (
+                    <>
+                      <input
+                        className={styles.paramInput}
+                        value={param}
+                        onChange={(e) =>
+                          changeParam(index, e.target.value)
+                        }
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            saveEdit();
+                          }
+                        }}
+                      />
+
+                      <button
+                        type="button"
+                        className={styles.iconButton}
+                        onClick={saveEdit}
+                      >
+                        <CheckIcon />
+                      </button>
+
+                      <button
+                        type="button"
+                        className={styles.iconButton}
+                        onClick={() => deleteParam(index)}
+                      >
+                        <TrashIcon />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p>{param}</p>
+
+                      <button
+                        type="button"
+                        className={styles.iconButton}
+                        onClick={() => startEdit(`param-${index}`)}
+                      >
+                        <EditIcon />
+                      </button>
+
+                      <button
+                        type="button"
+                        className={styles.iconButton}
+                        onClick={() => deleteParam(index)}
+                      >
+                        <TrashIcon />
+                      </button>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -115,7 +527,12 @@ export default function Editing() {
           <button type="submit" className={styles.saveButton}>
             Сохранить
           </button>
-          <button type="button" className={styles.deleteButton}>
+
+          <button
+            type="button"
+            className={styles.deleteButton}
+            onClick={handleDeleteProduct}
+          >
             Удалить
           </button>
         </div>
@@ -123,3 +540,5 @@ export default function Editing() {
     </section>
   );
 }
+
+export default Editing;

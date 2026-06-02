@@ -23,7 +23,8 @@ function App() {
         <Route path="/Catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
         <Route path="/Add-product" element={<ProtectedRoute><AddProductPage /></ProtectedRoute>} />
-        <Route path="/Editing/:id" element={<ProtectedRoute><Editing /></ProtectedRoute>} />
+        <Route path="/Editing/:art" element={<ProtectedRoute><Editing /></ProtectedRoute>} />
+        <Route path="/editing/:art" element={<ProtectedRoute><Editing /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

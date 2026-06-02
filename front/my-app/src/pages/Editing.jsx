@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { API_ROUTES } from "../api";
+import { authHeader } from "../auth";
 import styles from "./Editing.module.css";
 
 const EditIcon = () => (
@@ -80,27 +81,19 @@ const PlusIcon = () => (
 );
 
 function Editing() {
-  const { id } = useParams();
+  const { art } = useParams();
   const navigate = useNavigate();
 
   const [title, setTitle] = useState("");
   const [article, setArticle] = useState("");
   const [price, setPrice] = useState("");
   const [params, setParams] = useState([]);
+  const [photos, setPhotos] = useState([]);
+  const [mainPhoto, setMainPhoto] = useState("");
 
   const [editingField, setEditingField] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const getToken = () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      throw new Error("Нет токена авторизации");
-    }
-
-    return token;
-  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -108,13 +101,8 @@ function Editing() {
         setLoading(true);
         setError("");
 
-        const token = getToken();
-
-        const response = await fetch(API_ROUTES.getProductById(id), {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await fetch(API_ROUTES.getProductByArt(art), {
+          headers: { ...authHeader() },
         });
 
         if (!response.ok) {
@@ -127,6 +115,8 @@ function Editing() {
         setArticle(product.article || product.vendor_code || "");
         setPrice(product.price || "");
         setParams(product.params || product.parameters || []);
+        setPhotos(product.photos || []);
+        setMainPhoto(product.main_photo || product.photo || "");
       } catch (err) {
         setError(err.message);
       } finally {
@@ -134,8 +124,8 @@ function Editing() {
       }
     };
 
-    fetchProduct();
-  }, [id]);
+    if (art) fetchProduct();
+  }, [art]);
 
   const startEdit = (fieldName) => {
     setEditingField(fieldName);
@@ -194,13 +184,11 @@ function Editing() {
       setLoading(true);
       setError("");
 
-      const token = getToken();
-
-      const response = await fetch(API_ROUTES.updateProduct(id), {
+      const response = await fetch(API_ROUTES.updateProduct(art), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...authHeader(),
         },
         body: JSON.stringify(productData),
       });
@@ -222,13 +210,9 @@ function Editing() {
       setLoading(true);
       setError("");
 
-      const token = getToken();
-
-      const response = await fetch(API_ROUTES.deleteProduct(id), {
+      const response = await fetch(API_ROUTES.deleteProduct(art), {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { ...authHeader() },
       });
 
       if (!response.ok) {
@@ -248,7 +232,13 @@ function Editing() {
   }
 
   if (error) {
-    return <div className={styles.error}>{error}</div>;
+    return (
+      <div className={styles.error}>
+        <h2>Ошибка загрузки товара</h2>
+        <p>{error}</p>
+        <button onClick={() => navigate("/Catalog")}>Вернуться в каталог</button>
+      </div>
+    );
   }
 
   return (
@@ -322,14 +312,37 @@ function Editing() {
         <div className={styles.content}>
           <div className={styles.gallery}>
             <div className={styles.previewList}>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
+              {photos.length > 0 ? (
+                photos.map((photo, index) => (
+                  <div 
+                    key={index} 
+                    className={styles.previewThumb}
+                    onClick={() => setMainPhoto(photo.url_photos)}
+                    style={{ cursor: 'pointer', borderColor: mainPhoto === photo.url_photos ? '#3aa0de' : '#7ea1b0' }}
+                  >
+                     <img src={photo.url_photos} alt={`Фото ${index + 1}`} />
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                </>
+              )}
             </div>
 
-            <div className={styles.mainImage}></div>
+            <div className={styles.mainImage}>
+              {mainPhoto ? (
+                <img src={mainPhoto} alt={title || "Товар"} />
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999' }}>
+                  Нет фото
+                </div>
+              )}
+            </div>
           </div>
 
           <div className={styles.info}>

@@ -12,20 +12,23 @@ function SearchBar() {
   const searchRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Загрузка категорий
+  // Загрузка категорий из товаров
   const fetchCategories = async () => {
     try {
-      const res = await fetch(API_ROUTES.getPopularCategories(), {
+      const res = await fetch(API_ROUTES.getObjects(1, 1000), {
         headers: { ...authHeader() },
       });
       const data = await res.json();
-      setCategories(Array.isArray(data) ? data : data.categories || []);
+      const products = Array.isArray(data) ? data : (data.objects || []);
+      
+      // Вытаскиваем уникальные категории
+      const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
+      setCategories(uniqueCategories);
     } catch (err) {
       console.error("Ошибка загрузки категорий:", err);
     }
   };
 
-  // Функция поиска и перехода на каталог
   const handleSearch = () => {
     if (query.trim()) {
       navigate(`/catalog?search=${encodeURIComponent(query.trim())}`);
@@ -33,14 +36,12 @@ function SearchBar() {
     }
   };
 
-  // Обработка нажатия Enter
   const handleKeyPress = (e) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
 
-  // Закрытие по клику вне
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
@@ -51,14 +52,12 @@ function SearchBar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Загрузка категорий при открытии
   useEffect(() => {
     if (isOpen && categories.length === 0) {
       fetchCategories();
     }
   }, [isOpen]);
 
-  // Выбор категории
   const handleCategoryClick = (cat) => {
     setQuery(cat);
     navigate(`/catalog?search=${encodeURIComponent(cat)}`);
@@ -68,7 +67,6 @@ function SearchBar() {
   return (
     <div className={styles["search-container"]}>
       <div className={styles["search-wrapper"]} ref={searchRef}>
-        {/* Строка поиска */}
         <div
           className={`${styles["search-bar"]} ${isOpen ? styles["search-bar-open"] : ""}`}
           onClick={() => {
@@ -87,7 +85,6 @@ function SearchBar() {
               onFocus={() => setIsOpen(true)}
               onKeyPress={handleKeyPress}
             />
-            {/* Лупа - кликабельная */}
             <svg 
               className={styles["search-icon"]} 
               width="32" 
@@ -103,7 +100,6 @@ function SearchBar() {
           </div>
         </div>
 
-        {/* Выпадающий список с категориями */}
         {isOpen && !query.trim() && (
           <div className={styles["search-dropdown"]}>
             <h2 className={styles["dropdown-title"]}>Популярные категории</h2>

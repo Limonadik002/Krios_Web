@@ -157,3 +157,12 @@
   cursor: pointer;
   font-size: 16px;
 }
+.search-info {
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  background: #F2FCFF;
+  border-radius: 12px;
+  font-family: "Inter", sans-serif;
+  font-size: 16px;
+  color: #006383;
+}

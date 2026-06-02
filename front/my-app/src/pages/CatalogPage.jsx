@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Card from "../components/Card";
 import { API_ROUTES } from "../api";
 import { authHeader } from "../auth";
@@ -7,6 +7,8 @@ import styles from "./Catolog.module.css";
 
 function CatalogPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search") || "";
 
   const [currentPage, setCurrentPage] = useState(1);
   const [products, setProducts] = useState([]);
@@ -14,6 +16,7 @@ function CatalogPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [totalCount, setTotalCount] = useState(null);
+  const [allProducts, setAllProducts] = useState([]);
 
   const ITEMS_PER_PAGE = 20;
 
@@ -23,49 +26,72 @@ function CatalogPage() {
     return mainPhoto ? mainPhoto.url_photos : photos[0]?.url_photos || "";
   };
 
-  const fetchProducts = async (page) => {
-    setLoading(true);
-    setError(null);
+  // Фильтрация по поисковому запросу
+  const filterProductsBySearch = (productsList, query) => {
+    if (!query) return productsList;
+    const lowerQuery = query.toLowerCase();
+    return productsList.filter(product => 
+      product.name?.toLowerCase().includes(lowerQuery) ||
+      product.description?.toLowerCase().includes(lowerQuery) ||
+      product.category?.toLowerCase().includes(lowerQuery)
+    );
+  };
 
+  // Загрузка всех товаров
+  const fetchAllProducts = async () => {
     try {
-      // 1. Один раз получаем ВСЕ товары
-      if (totalCount === null) {
-        const allResponse = await fetch(API_ROUTES.getObjects(1, 180), {
-          headers: { ...authHeader() },
-        });
-        const allData = await allResponse.json();
-        const allProducts = Array.isArray(allData) ? allData : (allData.objects || []);
-        
-        setTotalCount(allProducts.length);
-        setTotalPages(Math.ceil(allProducts.length / ITEMS_PER_PAGE));
-      }
-      
-      // 2. Запрашиваем нужную страницу
-      const response = await fetch(API_ROUTES.getObjects(page, ITEMS_PER_PAGE), {
+      const response = await fetch(API_ROUTES.getObjects(1, 1000), {
         headers: { ...authHeader() },
       });
-      
-      if (!response.ok) {
-        throw new Error(`Ошибка сервера: ${response.status}`);
-      }
-      
+      if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
       const data = await response.json();
-      const productsOnPage = Array.isArray(data) ? data : (data.objects || []);
-      
-      setProducts(productsOnPage);
-      
+      const allProductsData = Array.isArray(data) ? data : (data.objects || []);
+      setAllProducts(allProductsData);
+      setTotalCount(allProductsData.length);
+      return allProductsData;
     } catch (err) {
       console.error("Ошибка загрузки товаров:", err);
-      setError(err.message);
-      setProducts([]);
-    } finally {
-      setLoading(false);
+      throw err;
     }
   };
 
+  // Применение фильтрации и пагинации
+  const applyFiltersAndPagination = (productsList, page, query) => {
+    const filtered = filterProductsBySearch(productsList, query);
+    const newTotalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+    setTotalPages(newTotalPages);
+    
+    const startIndex = (page - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    const productsOnPage = filtered.slice(startIndex, endIndex);
+    
+    setProducts(productsOnPage);
+    return filtered.length;
+  };
+
+  // Инициализация
   useEffect(() => {
-    fetchProducts(currentPage);
-  }, [currentPage]);
+    const init = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const allProductsData = await fetchAllProducts();
+        applyFiltersAndPagination(allProductsData, currentPage, searchQuery);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, []);
+
+  // Обновление при изменении страницы или поискового запроса
+  useEffect(() => {
+    if (allProducts.length > 0) {
+      applyFiltersAndPagination(allProducts, currentPage, searchQuery);
+    }
+  }, [currentPage, searchQuery, allProducts]);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -97,6 +123,10 @@ function CatalogPage() {
     return buttons;
   };
 
+  const filteredCount = searchQuery 
+    ? filterProductsBySearch(allProducts, searchQuery).length 
+    : totalCount;
+
   if (loading && products.length === 0) {
     return (
       <div className={styles["catalog-container"]}>
@@ -121,7 +151,7 @@ function CatalogPage() {
           <h1 className={styles["catalog-title"]}>Каталог товаров</h1>
           <div className={styles.error}>
             Ошибка: {error}
-            <button onClick={() => fetchProducts(currentPage)}>Повторить</button>
+            <button onClick={() => window.location.reload()}>Повторить</button>
           </div>
         </div>
       </div>
@@ -141,6 +171,13 @@ function CatalogPage() {
           </button>
 
           <h1 className={styles["catalog-title"]}>Каталог товаров</h1>
+
+          {/* Только инфо о поиске, без формы! */}
+          {searchQuery && (
+            <div className={styles["search-info"]}>
+              Результаты поиска: <strong>"{searchQuery}"</strong> — найдено {filteredCount} товаров
+            </div>
+          )}
 
           <div className={styles["catalog-grid"]}>
             {products.map((product) => (

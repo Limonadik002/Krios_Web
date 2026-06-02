@@ -1,7 +1,7 @@
 export default function Home () {
     return (
         <div>
-            <h1>пенис</h1>
+            <h1>Находится в разработке</h1>
         </div>
 
 

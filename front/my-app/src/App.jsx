@@ -7,6 +7,7 @@ import Home from "./pages/Home";
 import Editing from "./pages/Editing";
 import Register from "./pages/Register";
 import { isAuthenticated } from "./auth";
+import Create from "./pages/Create";
 
 function ProtectedRoute({ children }) {
   return isAuthenticated() ? children : <Navigate to="/" />;
@@ -23,6 +24,7 @@ function App() {
         <Route path="/Catalog" element={<ProtectedRoute><CatalogPage /></ProtectedRoute>} />
         <Route path="/Add-product" element={<ProtectedRoute><AddProductPage /></ProtectedRoute>} />
         <Route path="/Editing/:id" element={<ProtectedRoute><Editing /></ProtectedRoute>} />
+        <Route path="/Create" element={<ProtectedRoute><Create /></ProtectedRoute>} />
       </Routes>
     </BrowserRouter>
   );

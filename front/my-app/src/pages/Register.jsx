@@ -41,18 +41,17 @@ function Register() {
   return (
     <div className={styles["register-container"]}>
       <form className={styles["register-form"]} onSubmit={handleSubmit}>
-        <h1 className={styles["register-title"]}>Регистрация админа</h1>
-        
+        <h1 className={styles["register-title"]}>Вход</h1>
+        <p className={styles["register-p"]}>Введите Ваши данные ниже</p>
         {error && <div className={styles.error}>{error}</div>}
         
         <div className={styles["input-group"]}>
-          <label htmlFor="password">Пароль</label>
           <input
             id="password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Введите пароль"
+            placeholder="Пароль"
             required
           />
         </div>
@@ -62,7 +61,7 @@ function Register() {
           className={styles["register-button"]}
           disabled={loading}
         >
-          {loading ? "Загрузка..." : "Зарегистрироваться"}
+          {loading ? "Загрузка..." : "Войти"}
         </button>
       </form>
     </div>

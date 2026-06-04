@@ -15,18 +15,12 @@ export const API_ROUTES = {
 
   createProduct: () =>
     `${API_BASE_URL}/CreateObject`,
-
+  
   updateProduct: (id) =>
     `${API_BASE_URL}/UpdateObject?id=${id}`,
 
   deleteProduct: (id) =>
     `${API_BASE_URL}/DeleteObject?id=${id}`,
-  
-  updateProduct: (art) =>
-    `${API_BASE_URL}/UpdateObject?art=${encodeURIComponent(art)}`,
-
-  deleteProduct: (art) =>
-    `${API_BASE_URL}/DeleteObject?art=${encodeURIComponent(art)}`,
 };
 
 export default API_BASE_URL;

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { API_ROUTES } from "../api";
+import { authHeader } from "../auth";
 import styles from "./Editing.module.css";
 
 const EditIcon = () => (
@@ -80,26 +81,29 @@ const PlusIcon = () => (
 );
 
 function Editing() {
-  const { id } = useParams();
+  const { art } = useParams();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [title, setTitle] = useState("");
   const [article, setArticle] = useState("");
   const [price, setPrice] = useState("");
   const [params, setParams] = useState([]);
+  const [photos, setPhotos] = useState([]);
+  const [mainPhoto, setMainPhoto] = useState("");
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const [editingField, setEditingField] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const getToken = () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      throw new Error("Нет токена авторизации");
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => setMainPhoto(event.target.result);
+      reader.readAsDataURL(file);
     }
-
-    return token;
   };
 
   useEffect(() => {
@@ -108,13 +112,8 @@ function Editing() {
         setLoading(true);
         setError("");
 
-        const token = getToken();
-
-        const response = await fetch(API_ROUTES.getProductById(id), {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await fetch(API_ROUTES.getProductByArt(art), {
+          headers: { ...authHeader() },
         });
 
         if (!response.ok) {
@@ -127,6 +126,8 @@ function Editing() {
         setArticle(product.article || product.vendor_code || "");
         setPrice(product.price || "");
         setParams(product.params || product.parameters || []);
+        setPhotos(product.photos || []);
+        setMainPhoto(product.main_photo || product.photo || (product.photos && product.photos[0]?.url_photos) || "");
       } catch (err) {
         setError(err.message);
       } finally {
@@ -134,8 +135,8 @@ function Editing() {
       }
     };
 
-    fetchProduct();
-  }, [id]);
+    if (art) fetchProduct();
+  }, [art]);
 
   const startEdit = (fieldName) => {
     setEditingField(fieldName);
@@ -194,13 +195,11 @@ function Editing() {
       setLoading(true);
       setError("");
 
-      const token = getToken();
-
-      const response = await fetch(API_ROUTES.updateProduct(id), {
+      const response = await fetch(API_ROUTES.updateProduct(art), {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          ...authHeader(),
         },
         body: JSON.stringify(productData),
       });
@@ -222,13 +221,9 @@ function Editing() {
       setLoading(true);
       setError("");
 
-      const token = getToken();
-
-      const response = await fetch(API_ROUTES.deleteProduct(id), {
+      const response = await fetch(API_ROUTES.deleteProduct(art), {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { ...authHeader() },
       });
 
       if (!response.ok) {
@@ -248,7 +243,13 @@ function Editing() {
   }
 
   if (error) {
-    return <div className={styles.error}>{error}</div>;
+    return (
+      <div className={styles.error}>
+        <h2>Ошибка загрузки товара</h2>
+        <p>{error}</p>
+        <button onClick={() => navigate("/Catalog")}>Вернуться в каталог</button>
+      </div>
+    );
   }
 
   return (
@@ -322,14 +323,53 @@ function Editing() {
         <div className={styles.content}>
           <div className={styles.gallery}>
             <div className={styles.previewList}>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
-              <div className={styles.previewThumb}></div>
+              {photos.length > 0 ? (
+                photos.map((photo, index) => (
+                  <div 
+                    key={index} 
+                    className={styles.previewThumb}
+                    onClick={() => setMainPhoto(photo.url_photos)}
+                    style={{ cursor: 'pointer', borderColor: mainPhoto === photo.url_photos ? '#3aa0de' : '#7ea1b0' }}
+                  >
+                     <img src={photo.url_photos} alt={`Фото ${index + 1}`} />
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                  <div className={styles.previewThumb}></div>
+                </>
+              )}
             </div>
 
-            <div className={styles.mainImage}></div>
+            <div className={styles.mainImage}>
+              {mainPhoto ? (
+                <img src={mainPhoto} alt={title || "Товар"} />
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#999' }}>
+                  Нет фото
+                </div>
+              )}
+              
+              <div className={styles.imageActions}>
+                <button type="button" className={styles.imageButton} onClick={() => fileInputRef.current?.click()}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M4 12H20M12 4V20" stroke="#006383" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </button>
+                <button type="button" className={styles.imageButton} onClick={() => setIsImageModalOpen(true)}>
+                  <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+                    <path d="M20.3827 4.2036L19.1467 5.4396L7.7854 16.7996C7.01607 17.5703 6.63073 17.9556 6.30007 18.3796C5.90992 18.8802 5.57509 19.4216 5.3014 19.9943C5.07073 20.4796 4.89873 20.9969 4.55473 22.0289L3.09607 26.4036L2.73873 27.4729C2.65515 27.7222 2.64275 27.9898 2.70292 28.2457C2.7631 28.5017 2.89346 28.7357 3.07936 28.9216C3.26526 29.1075 3.49933 29.2379 3.75525 29.2981C4.01117 29.3582 4.2788 29.3458 4.52807 29.2623L5.5974 28.9049L9.97207 27.4463C11.0054 27.1023 11.5214 26.9303 12.0067 26.6996C12.5818 26.4258 13.1201 26.0929 13.6214 25.7009C14.0454 25.3703 14.4307 24.9849 15.2001 24.2156L26.5614 12.8543L27.7974 11.6183C28.7806 10.635 29.333 9.30145 29.333 7.91093C29.333 6.52041 28.7806 5.18684 27.7974 4.2036C26.8142 3.22035 25.4806 2.66797 24.0901 2.66797C22.6995 2.66797 21.366 3.22035 20.3827 4.2036Z" stroke="#006383" strokeWidth="2"/>
+                    <path opacity="0.5" d="M19.1464 5.4375C19.1464 5.4375 19.301 8.06417 21.6184 10.3815C23.9357 12.6988 26.561 12.8522 26.561 12.8522M5.59704 28.9042L3.0957 26.4028" stroke="#006383" strokeWidth="2"/>
+                  </svg>
+                </button>
+              </div>
+              
+              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+            </div>
           </div>
 
           <div className={styles.info}>

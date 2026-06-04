@@ -23,6 +23,7 @@ func (h *partHandler) RegisterRouter(mux *http.ServeMux) {
 	mux.HandleFunc("PUT /UpdateObj", midlwareAuth.AuthMidlleware(h.UpdateObj))
 	mux.HandleFunc("POST /AddOrders", midlwareAuth.AuthMidlleware(h.AddOrders))
 	mux.HandleFunc("GET /GetObjects", midlwareAuth.AuthMidlleware(h.GetObjects))
+	mux.HandleFunc("GET /GetObject", midlwareAuth.AuthMidlleware(h.GetObject))
 	mux.HandleFunc("GET /SearchObjects", midlwareAuth.AuthMidlleware(h.SearchObj))
 	mux.HandleFunc("DELETE /DeleteObj", midlwareAuth.AuthMidlleware(h.DeleteObj))
 	mux.HandleFunc("POST /RegisterAdmin", h.RegisterAdmin)
@@ -74,7 +75,7 @@ func (h *partHandler) GetObjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resObjs, err := h.service.GetObj(pageInt, limitInt)
+	resObjs, err := h.service.GetObjects(pageInt, limitInt)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return
@@ -86,6 +87,18 @@ func (h *partHandler) GetObjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+func (h *partHandler) GetObject(w http.ResponseWriter, r *http.Request) {
+	art := r.URL.Query().Get("art")
+	obj, err := h.service.GetObject(art)
+	if err != nil {
+		http.Error(w, err.Error(), 500)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	json.NewEncoder(w).Encode(obj)
 }
 
 func (h *partHandler) PresignedURL(w http.ResponseWriter, r *http.Request) {

@@ -5,17 +5,15 @@ function Card({ id, art, title, price, imgSrc, photos }) {
   const navigate = useNavigate();
 
   const handleEdit = () => {
-    navigate(`/editing/${id}`);
+    navigate(`/Editing/${art}`);
   };
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('ru-RU').format(price) + ' ₽';
   };
 
-  // Функция для получения нормальной картинки
   const getImageSrc = () => {
     if (!imgSrc || imgSrc.includes('example.com')) {
-      // Заглушка с названием товара
       return `https://placehold.co/300x300/006383/white?text=${encodeURIComponent(title)}`;
     }
     return imgSrc;

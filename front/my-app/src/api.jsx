@@ -7,20 +7,11 @@ export const API_ROUTES = {
   searchObjects: (query) =>
     `${API_BASE_URL}/SearchObjects?query=${encodeURIComponent(query)}`,
 
-  getAllCategories: () =>
-    `${API_BASE_URL}/GetAllCategories`,
-
-  getPopularCategories: () =>
-    `${API_BASE_URL}/GetPopularCategories`,
-
-  getObjectsByCategory: (category) =>
-    `${API_BASE_URL}/GetObjectsByCategory?category=${encodeURIComponent(category)}`,
-
   registerAdmin: () =>
     `${API_BASE_URL}/RegisterAdmin`,
 
-  getProductById: (id) =>
-    `${API_BASE_URL}/GetObjectById?id=${id}`,
+  getProductByArt: (art) =>
+    `${API_BASE_URL}/GetObject?art=${encodeURIComponent(art)}`,
 
   createProduct: () =>
     `${API_BASE_URL}/CreateObject`,
@@ -31,6 +22,11 @@ export const API_ROUTES = {
   deleteProduct: (id) =>
     `${API_BASE_URL}/DeleteObject?id=${id}`,
   
+  updateProduct: (art) =>
+    `${API_BASE_URL}/UpdateObject?art=${encodeURIComponent(art)}`,
+
+  deleteProduct: (art) =>
+    `${API_BASE_URL}/DeleteObject?art=${encodeURIComponent(art)}`,
 };
 
 export default API_BASE_URL;

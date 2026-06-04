@@ -137,6 +137,49 @@ func (d *partRepo) GetObj(offset, limit int) ([]m.Object, error) {
 	return objects, nil
 }
 
+func (d *partRepo) GetObject(art string) (m.Object, error) {
+	var Object m.Object
+	Object.Article = art
+	var charsJSON []byte
+	err := d.db.QueryRow(`SELECT 
+	name, price, parametrs_name,
+	characteristics FROM objects 
+	WHERE article = $1`, art).Scan(&Object.Name, &Object.Price, &Object.ParametrsName, &charsJSON)
+
+	if err != nil {
+		return m.Object{}, fmt.Errorf("err select from art", art, err.Error())
+	}
+
+	if err = json.Unmarshal(charsJSON, &Object.Characteristics); err != nil {
+		return m.Object{}, fmt.Errorf("unmarshal chars %w", err)
+	}
+
+	PhotoRows, err := d.db.Query("SELECT position, url FROM objects_photo WHERE object_article = $1", art)
+
+	if err != nil {
+		return m.Object{}, fmt.Errorf("Err select get arg photo %w", err)
+	}
+
+	var Photos []m.ObjPhoto
+
+	for PhotoRows.Next() {
+		var Photo m.ObjPhoto
+
+		err := PhotoRows.Scan(&Photo.Position, &Photo.UrlPhotos)
+
+		if err != nil {
+			return m.Object{}, fmt.Errorf("scan get photos err %w", err)
+		}
+
+		Photos = append(Photos, Photo)
+	}
+	PhotoRows.Close()
+	Object.Photos = Photos
+
+	return Object, nil
+
+}
+
 func (d *partRepo) SearchObj(nameObj string) (*[]m.RespSearch, error) {
 	searchGood := "%" + nameObj + "%"
 

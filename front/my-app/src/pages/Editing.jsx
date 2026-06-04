@@ -97,12 +97,38 @@ function Editing() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => setMainPhoto(event.target.result);
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    try {
+      setLoading(true);
+      
+      const presignRes = await fetch(API_ROUTES.getPresignedUrls(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeader() },
+        body: JSON.stringify({ filenames: [file.name] }),
+      });
+      
+      if (!presignRes.ok) throw new Error('Ошибка получения ссылки для загрузки');
+      
+      const presignData = await presignRes.json();
+      const { urlWrite, urlRead, key } = presignData.items[0];
+      
+      await fetch(urlWrite, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      });
+      
+      setMainPhoto(urlRead);
+      setPhotos(prev => [...prev, { url_photos: urlRead, key, position: prev.length + 1 }]);
+      
+    } catch (err) {
+      console.error('Ошибка загрузки фото:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -189,6 +215,8 @@ function Editing() {
       article,
       price,
       params,
+      images: photos.map(p => p.url_photos),
+      main_image: mainPhoto,
     };
 
     try {

@@ -18,6 +18,9 @@ export const API_ROUTES = {
 
   deleteProduct: (art) =>
     `${API_BASE_URL}/DeleteObject?art=${encodeURIComponent(art)}`,
+
+  getPresignedUrls: () =>
+    `${API_BASE_URL}/api/Presign`,
 };
 
 export default API_BASE_URL;

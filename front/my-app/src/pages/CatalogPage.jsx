@@ -26,7 +26,6 @@ function CatalogPage() {
     return mainPhoto ? mainPhoto.url_photos : photos[0]?.url_photos || "";
   };
 
-  // Фильтрация по поисковому запросу
   const filterProductsBySearch = (productsList, query) => {
     if (!query) return productsList;
     const lowerQuery = query.toLowerCase();
@@ -37,7 +36,6 @@ function CatalogPage() {
     );
   };
 
-  // Загрузка всех товаров
   const fetchAllProducts = async () => {
     try {
       const response = await fetch(API_ROUTES.getObjects(1, 1000), {
@@ -55,7 +53,6 @@ function CatalogPage() {
     }
   };
 
-  // Применение фильтрации и пагинации
   const applyFiltersAndPagination = (productsList, page, query) => {
     const filtered = filterProductsBySearch(productsList, query);
     const newTotalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
@@ -69,7 +66,6 @@ function CatalogPage() {
     return filtered.length;
   };
 
-  // Инициализация
   useEffect(() => {
     const init = async () => {
       setLoading(true);
@@ -86,7 +82,6 @@ function CatalogPage() {
     init();
   }, []);
 
-  // Обновление при изменении страницы или поискового запроса
   useEffect(() => {
     if (allProducts.length > 0) {
       applyFiltersAndPagination(allProducts, currentPage, searchQuery);
@@ -123,6 +118,14 @@ function CatalogPage() {
     return buttons;
   };
 
+  const handleBackClick = () => {
+    if (searchQuery) {
+      navigate("/Catalog");
+    } else {
+      navigate("/Admin");
+    }
+  };
+
   const filteredCount = searchQuery 
     ? filterProductsBySearch(allProducts, searchQuery).length 
     : totalCount;
@@ -131,8 +134,8 @@ function CatalogPage() {
     return (
       <div className={styles["catalog-container"]}>
         <div className={styles["catalog-wraper"]}>
-          <button className={styles.back} onClick={() => navigate("/Admin")}>
-            Вернуться назад
+          <button className={styles.back} onClick={handleBackClick}>
+            {searchQuery ? "← Все товары" : "Вернуться назад"}
           </button>
           <h1 className={styles["catalog-title"]}>Каталог товаров</h1>
           <div className={styles.loading}>Загрузка товаров...</div>
@@ -145,8 +148,8 @@ function CatalogPage() {
     return (
       <div className={styles["catalog-container"]}>
         <div className={styles["catalog-wraper"]}>
-          <button className={styles.back} onClick={() => navigate("/Admin")}>
-            Вернуться назад
+          <button className={styles.back} onClick={handleBackClick}>
+            {searchQuery ? "← Все товары" : "Вернуться назад"}
           </button>
           <h1 className={styles["catalog-title"]}>Каталог товаров</h1>
           <div className={styles.error}>
@@ -164,15 +167,14 @@ function CatalogPage() {
         <div className={styles["catalog-wraper"]}>
           <button
             className={styles.back}
-            onClick={() => navigate("/Admin")}
+            onClick={handleBackClick}
             type="button"
           >
-            Вернуться назад
+            {searchQuery ? "← Все товары" : "Вернуться назад"}
           </button>
 
           <h1 className={styles["catalog-title"]}>Каталог товаров</h1>
 
-          {/* Только инфо о поиске, без формы! */}
           {searchQuery && (
             <div className={styles["search-info"]}>
               Результаты поиска: <strong>"{searchQuery}"</strong> — найдено {filteredCount} товаров

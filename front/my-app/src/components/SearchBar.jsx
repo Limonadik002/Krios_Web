@@ -15,7 +15,7 @@ function SearchBar() {
   // Загрузка категорий из товаров
   const fetchCategories = async () => {
     try {
-      const res = await fetch(API_ROUTES.getObjects(1, 1000), {
+      const res = await fetch(API_ROUTES.getObjects(1, 100), {
         headers: { ...authHeader() },
       });
       const data = await res.json();
@@ -99,23 +99,6 @@ function SearchBar() {
             </svg>
           </div>
         </div>
-
-        {isOpen && !query.trim() && (
-          <div className={styles["search-dropdown"]}>
-            <h2 className={styles["dropdown-title"]}>Популярные категории</h2>
-            <div className={styles["categories-list"]}>
-              {categories.map((cat, i) => (
-                <div 
-                  key={i} 
-                  className={styles["category-item"]}
-                  onClick={() => handleCategoryClick(cat)}
-                >
-                  {cat}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

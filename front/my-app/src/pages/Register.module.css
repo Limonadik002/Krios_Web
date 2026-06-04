@@ -6,14 +6,21 @@
 }
 
 .register-form {
-  background: white;
   padding: 40px;
-  border-radius: 24px;
-  border: 2px solid #046380;
   width: 400px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+}
+
+.register-p{
+  font-family: 'Onest', sans-serif;
+  font-weight: 500;
+  font-size: 24px;
+  color: #006383;
+  text-align: center;
+  margin: 0;
+  line-height: 24px;
+  margin-bottom: 48px;
 }
 
 .register-title {
@@ -23,6 +30,7 @@
   color: #006383;
   text-align: center;
   margin: 0;
+  margin-bottom: 16px;
 }
 
 .error {
@@ -37,7 +45,7 @@
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  margin-bottom: 48px;
 }
 
 .input-group label {

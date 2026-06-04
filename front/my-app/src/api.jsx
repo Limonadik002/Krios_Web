@@ -13,8 +13,11 @@ export const API_ROUTES = {
   getProductByArt: (art) =>
     `${API_BASE_URL}/GetObject?art=${encodeURIComponent(art)}`,
 
-  updateProduct: (art) =>
-    `${API_BASE_URL}/UpdateObject?art=${encodeURIComponent(art)}`,
+  createProduct: () =>
+    `${API_BASE_URL}/CreateObject`,
+  
+  updateProduct: (id) =>
+    `${API_BASE_URL}/UpdateObject?id=${id}`,
 
   deleteProduct: (art) =>
     `${API_BASE_URL}/DeleteObject?art=${encodeURIComponent(art)}`,

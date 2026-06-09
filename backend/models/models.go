@@ -9,7 +9,6 @@ type Object struct {
 	ParametrsName   string            `json:"parametrs_name"`
 	Characteristics map[string]string `json:"characteristics"`
 	Created_at      time.Time         `json:"created_at"`
-	Version         int               `json:"version"`
 	Photos          []ObjPhoto        `json:"photos"`
 }
 

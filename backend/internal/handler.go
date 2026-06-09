@@ -46,11 +46,12 @@ func (h *partHandler) CreateObj(w http.ResponseWriter, r *http.Request) {
 
 func (h *partHandler) UpdateObj(w http.ResponseWriter, r *http.Request) {
 	var UpdateObj m.Object
+	art := r.URL.Query().Get("art")
 	if err := json.NewDecoder(r.Body).Decode(&UpdateObj); err != nil {
 		http.Error(w, "not valid json", 400)
 		return
 	}
-	if err := h.service.UpdateObj(UpdateObj); err != nil {
+	if err := h.service.UpdateObj(UpdateObj, art); err != nil {
 		http.Error(w, err.Error(), 500)
 		return
 	}

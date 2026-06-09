@@ -101,34 +101,35 @@ function Editing() {
     const file = e.target.files[0];
     if (!file) return;
 
+    const reader = new FileReader();
+    reader.onload = (event) => setMainPhoto(event.target.result);
+    reader.readAsDataURL(file);
+
     try {
-      setLoading(true);
-      
       const presignRes = await fetch(API_ROUTES.getPresignedUrls(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeader() },
         body: JSON.stringify({ filenames: [file.name] }),
       });
       
-      if (!presignRes.ok) throw new Error('Ошибка получения ссылки для загрузки');
+      if (!presignRes.ok) throw new Error('Ошибка получения ссылки');
       
       const presignData = await presignRes.json();
-      const { urlWrite, urlRead, key } = presignData.items[0];
+      const { url_write, url_read, key } = presignData.items[0];
+      const fixedUrlRead = url_read.replace('//be6f59da-krios', '/be6f59da-krios');
       
-      await fetch(urlWrite, {
+      await fetch(url_write, {
         method: 'PUT',
         body: file,
-        headers: { 'Content-Type': file.type },
+        headers: { 'Content-Type': file.type || 'image/webp' },
       });
       
-      setMainPhoto(urlRead);
-      setPhotos(prev => [...prev, { url_photos: urlRead, key, position: prev.length + 1 }]);
+      setMainPhoto(fixedUrlRead);
+      setPhotos(prev => [...prev, { url_photos: fixedUrlRead, key, position: prev.length + 1 }]);
       
     } catch (err) {
       console.error('Ошибка загрузки фото:', err);
       setError(err.message);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -211,13 +212,16 @@ function Editing() {
     e.preventDefault();
 
     const productData = {
-      title,
-      article,
-      price,
-      params,
-      images: photos.map(p => p.url_photos),
-      main_image: mainPhoto,
-    };
+  name: title,
+  article: article,
+  price: parseFloat(price) || 0,
+  parametrs_name: params.join(", "),
+  photos: photos.map(p => ({
+    url_photos: p.url_photos,
+    position: p.position,
+    obj_art: article
+  })),
+};
 
     try {
       setLoading(true);

@@ -17,13 +17,14 @@ export const API_ROUTES = {
     `${API_BASE_URL}/CreateObject`,
   
   updateProduct: (id) =>
-    `${API_BASE_URL}/UpdateObject?id=${id}`,
+    `${API_BASE_URL}/UpdateObj?art=${id}`,
 
   deleteProduct: (art) =>
-    `${API_BASE_URL}/DeleteObject?art=${encodeURIComponent(art)}`,
+    `${API_BASE_URL}/DeleteObj?art=${encodeURIComponent(art)}`,
 
   getPresignedUrls: () =>
-    `${API_BASE_URL}/api/Presign`,
+    `${API_BASE_URL}/Presign`,
+  uploadPhoto: () => `${API_BASE_URL}/UploadPhoto`,
 };
 
 export default API_BASE_URL;

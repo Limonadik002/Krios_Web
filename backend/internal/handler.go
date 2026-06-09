@@ -39,7 +39,7 @@ func (h *partHandler) CreateObj(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), 500)
 		return
 	}
-	w.Header().Set("Contenet-type", "application/json")
+	w.Header().Set("Content-type", "application/json")
 	w.WriteHeader(200)
 
 }

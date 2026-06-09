@@ -57,7 +57,10 @@ func (d *partRepo) UpdateInfoObj(art string, UpdateObj m.Object) error {
 	if err != nil {
 		return err
 	}
-	rows, _ := res.RowsAffected()
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to get affected rows: %w", err)
+	}
 	if rows == 0 {
 		return sql.ErrNoRows
 	}

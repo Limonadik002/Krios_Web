@@ -49,7 +49,7 @@ func (s *partService) CreateObj(Obj m.Object) error {
 // Срочно добавить валидацию пришедших полей, не занят ли артикул и тд завтра
 func (s *partService) UpdateObj(UpdateObj m.Object, art string) error {
 	if UpdateObj.Name == "" {
-		return fmt.Errorf("")
+		return fmt.Errorf("Name is empty")
 	}
 
 	if err := s.repo.UpdateInfoObj(art, UpdateObj); err != nil {

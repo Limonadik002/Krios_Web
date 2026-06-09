@@ -52,11 +52,14 @@ func (d *partRepo) UpdateInfoObj(art string, UpdateObj m.Object) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal characteristics: %w", err)
 	}
-	res, err := d.db.Exec(`UPDATE objects SET name=$1, photo=$2, price=$3, parametrs_name=$4, characteristics=$5, version=version+1
-		WHERE article=$6 AND version=$7`, UpdateObj.Name, UpdateObj.Photos, UpdateObj.Price, UpdateObj.ParametrsName, charsJSON, art, UpdateObj.Version)
+
+	res, err := d.db.Exec(`UPDATE objects SET name=$1, price=$2, parametrs_name=$3, characteristics=$4, version=version+1
+		WHERE article=$5 AND version=$6`,
+		UpdateObj.Name, UpdateObj.Price, UpdateObj.ParametrsName, charsJSON, art, UpdateObj.Version)
 	if err != nil {
 		return err
 	}
+
 	rows, err := res.RowsAffected()
 	if err != nil {
 		return fmt.Errorf("failed to get affected rows: %w", err)
@@ -64,9 +67,23 @@ func (d *partRepo) UpdateInfoObj(art string, UpdateObj m.Object) error {
 	if rows == 0 {
 		return sql.ErrNoRows
 	}
+
+	for _, photo := range UpdateObj.Photos {
+		_, err = d.db.Exec(`DELETE FROM objects_photo WHERE object_article=$1 AND position=$2`,
+			art, photo.Position)
+		if err != nil {
+			return fmt.Errorf("failed to delete old photo at position %d: %w", photo.Position, err)
+		}
+
+		_, err = d.db.Exec(`INSERT INTO objects_photo (object_article, position, url) VALUES ($1, $2, $3)`,
+			art, photo.Position, photo.UrlPhotos)
+		if err != nil {
+			return fmt.Errorf("failed to insert photo at position %d: %w", photo.Position, err)
+		}
+	}
+
 	return nil
 }
-
 func (d *partRepo) AddOrdersFromDb(Orders []*m.Order, OrderId int) error {
 
 	for _, Order := range Orders {

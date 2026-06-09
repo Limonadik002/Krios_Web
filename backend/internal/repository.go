@@ -1,8 +1,10 @@
 package internal
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	m "github.com/vova1001/krios_proj/models"
@@ -85,12 +87,15 @@ func (d *partRepo) GetOrderId() (int, error) {
 	return maxOrderID, nil
 }
 
-func (d *partRepo) GetObj(offset, limit int) ([]m.Object, error) {
-	rows, err := d.db.Query(`SELECT article, name, price, parametrs_name, characteristics 
+func (d *partRepo) GetObj(offset, limit int, ctx context.Context) ([]m.Object, error) {
+	rows, err := d.db.QueryContext(ctx, `SELECT article, name, price, parametrs_name, characteristics 
 				FROM objects
 				ORDER BY created_at DESC
 				LIMIT $1 OFFSET $2`, limit, offset)
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return nil, fmt.Errorf("Client disconected%w", err)
+		}
 		return nil, fmt.Errorf("Err select get arg obj offset limit%w", err)
 	}
 	defer rows.Close()
@@ -110,9 +115,12 @@ func (d *partRepo) GetObj(offset, limit int) ([]m.Object, error) {
 			return nil, fmt.Errorf("unmarshal chars %w", err)
 		}
 
-		PhotoRows, err := d.db.Query("SELECT position, url FROM objects_photo WHERE object_article = $1", obj.Article)
+		PhotoRows, err := d.db.QueryContext(ctx, "SELECT position, url FROM objects_photo WHERE object_article = $1", obj.Article)
 
 		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return nil, fmt.Errorf("Client disconected%w", err)
+			}
 			return nil, fmt.Errorf("Err select get arg photo offset limit%w", err)
 		}
 

@@ -60,9 +60,9 @@ func (s *partService) UpdateObj(UpdateObj m.Object) error {
 	return nil
 }
 
-func (s *partService) GetObjects(page, limit int) ([]m.Object, error) {
+func (s *partService) GetObjects(page, limit int, ctx context.Context) ([]m.Object, error) {
 	offset := (page - 1) * limit
-	objects, err := s.repo.GetObj(offset, limit)
+	objects, err := s.repo.GetObj(offset, limit, ctx)
 
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (s *partService) GeneratePresignedURLs(ctx context.Context, req *m.PresignR
 
 		ext := filepath.Ext(filesName)
 		if ext == "" {
-			ext = ".bin"
+			ext = ".webp"
 		}
 
 		key := fmt.Sprintf("%s%s", uuid.New().String(), ext)

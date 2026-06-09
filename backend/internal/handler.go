@@ -62,6 +62,7 @@ func (h *partHandler) UpdateObj(w http.ResponseWriter, r *http.Request) {
 func (h *partHandler) GetObjects(w http.ResponseWriter, r *http.Request) {
 	page := r.URL.Query().Get("page")
 	limit := r.URL.Query().Get("limit")
+	ctx := r.Context()
 
 	pageInt, err := strconv.Atoi(page)
 	if err != nil {
@@ -75,7 +76,7 @@ func (h *partHandler) GetObjects(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resObjs, err := h.service.GetObjects(pageInt, limitInt)
+	resObjs, err := h.service.GetObjects(pageInt, limitInt, ctx)
 	if err != nil {
 		http.Error(w, err.Error(), 500)
 		return

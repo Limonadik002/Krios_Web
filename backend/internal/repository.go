@@ -52,8 +52,8 @@ func (d *partRepo) UpdateInfoObj(art string, UpdateObj m.Object) error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal characteristics: %w", err)
 	}
-	res, err := d.db.Exec(`UPDATE objects SET article=$1, name=$2, photo=$3, price=$4, parametrs_name=$5, characteristics=$6, version=version+1
-		WHERE article=$1 AND version=$7`, UpdateObj.Article, UpdateObj.Name, UpdateObj.Photos, UpdateObj.Price, UpdateObj.ParametrsName, charsJSON, UpdateObj.Version)
+	res, err := d.db.Exec(`UPDATE objects SET name=$1, photo=$2, price=$3, parametrs_name=$4, characteristics=$5, version=version+1
+		WHERE article=$6 AND version=$7`, UpdateObj.Name, UpdateObj.Photos, UpdateObj.Price, UpdateObj.ParametrsName, charsJSON, art, UpdateObj.Version)
 	if err != nil {
 		return err
 	}

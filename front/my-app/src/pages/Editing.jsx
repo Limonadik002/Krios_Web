@@ -101,6 +101,18 @@ function Editing() {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Проверка на WebP
+    if (!file.type.includes('webp') && !file.name.endsWith('.webp')) {
+      setError('Разрешены только WebP изображения');
+      return;
+    }
+
+    // Проверка количества
+    if (photos.length >= 5) {
+      setError('Максимум 5 фотографий');
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => setMainPhoto(event.target.result);
     reader.readAsDataURL(file);
@@ -121,7 +133,7 @@ function Editing() {
       await fetch(url_write, {
         method: 'PUT',
         body: file,
-        headers: { 'Content-Type': file.type || 'image/webp' },
+        headers: { 'Content-Type': 'image/webp' },
       });
       
       setMainPhoto(fixedUrlRead);
@@ -212,16 +224,16 @@ function Editing() {
     e.preventDefault();
 
     const productData = {
-  name: title,
-  article: article,
-  price: parseFloat(price) || 0,
-  parametrs_name: params.join(", "),
-  photos: photos.map(p => ({
-    url_photos: p.url_photos,
-    position: p.position,
-    obj_art: article
-  })),
-};
+      name: title,
+      article: article,
+      price: parseFloat(price) || 0,
+      parametrs_name: params.join(", "),
+      photos: photos.map(p => ({
+        url_photos: p.url_photos,
+        position: p.position,
+        obj_art: article
+      })),
+    };
 
     try {
       setLoading(true);
@@ -387,11 +399,13 @@ function Editing() {
               )}
               
               <div className={styles.imageActions}>
-                <button type="button" className={styles.imageButton} onClick={() => fileInputRef.current?.click()}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M4 12H20M12 4V20" stroke="#006383" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </button>
+                {photos.length < 5 && (
+                  <button type="button" className={styles.imageButton} onClick={() => fileInputRef.current?.click()}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                      <path d="M4 12H20M12 4V20" stroke="#006383" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </button>
+                )}
                 <button type="button" className={styles.imageButton} onClick={() => setIsImageModalOpen(true)}>
                   <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
                     <path d="M20.3827 4.2036L19.1467 5.4396L7.7854 16.7996C7.01607 17.5703 6.63073 17.9556 6.30007 18.3796C5.90992 18.8802 5.57509 19.4216 5.3014 19.9943C5.07073 20.4796 4.89873 20.9969 4.55473 22.0289L3.09607 26.4036L2.73873 27.4729C2.65515 27.7222 2.64275 27.9898 2.70292 28.2457C2.7631 28.5017 2.89346 28.7357 3.07936 28.9216C3.26526 29.1075 3.49933 29.2379 3.75525 29.2981C4.01117 29.3582 4.2788 29.3458 4.52807 29.2623L5.5974 28.9049L9.97207 27.4463C11.0054 27.1023 11.5214 26.9303 12.0067 26.6996C12.5818 26.4258 13.1201 26.0929 13.6214 25.7009C14.0454 25.3703 14.4307 24.9849 15.2001 24.2156L26.5614 12.8543L27.7974 11.6183C28.7806 10.635 29.333 9.30145 29.333 7.91093C29.333 6.52041 28.7806 5.18684 27.7974 4.2036C26.8142 3.22035 25.4806 2.66797 24.0901 2.66797C22.6995 2.66797 21.366 3.22035 20.3827 4.2036Z" stroke="#006383" strokeWidth="2"/>
@@ -400,7 +414,7 @@ function Editing() {
                 </button>
               </div>
               
-              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleImageUpload} />
+              <input ref={fileInputRef} type="file" accept="image/webp" style={{ display: 'none' }} onChange={handleImageUpload} />
             </div>
           </div>
 

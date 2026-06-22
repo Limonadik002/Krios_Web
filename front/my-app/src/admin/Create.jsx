@@ -229,10 +229,6 @@ function Create() {
 
       const formData = new FormData();
 
-      // ВАЖНО:
-      // "image" должно совпадать с тем, что ждёт backend.
-      // Например, если на бэке upload.single("image"), оставляй "image".
-      // Если upload.single("file"), поменяй на "file".
       formData.append("image", imageFile);
 
       const response = await fetch(UPLOAD_IMAGE_URL, {
@@ -589,22 +585,6 @@ function Create() {
 
             <div className={styles.paramsHeader}>
               <h2 className={styles.paramsTitle}>Параметры</h2>
-
-              <button
-                type="button"
-                className={styles.iconButton}
-                onClick={addParam}
-              >
-                <EditIcon />
-              </button>
-
-              <button
-                type="button"
-                className={styles.iconButton}
-                onClick={() => setParams([])}
-              >
-                <TrashIcon />
-              </button>
             </div>
 
             <button
@@ -764,7 +744,6 @@ function Create() {
                     </svg>
 
                     <p>Перетащите или прикрепите файл</p>
-                    <span>Только формат .webp</span>
                   </>
                 )}
               </label>

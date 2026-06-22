@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Header from "./components/Header";
-import AdminPage from "./pages/AdminPage";
-import CatalogPage from "./pages/CatalogPage";
-import AddProductPage from "./pages/Create";
+import AdminPage from "./admin/AdminPage";
+import CatalogPage from "./admin/CatalogPage";
+import AddProductPage from "./admin/Create";
 import Home from "./pages/Home";
-import Editing from "./pages/Editing";
-import Register from "./pages/Register";
+import Editing from "./admin/Editing";
+import Register from "./admin/Register";
 import { isAuthenticated } from "./auth";
 
 
